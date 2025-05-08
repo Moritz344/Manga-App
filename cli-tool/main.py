@@ -1,5 +1,7 @@
 import requests
 from main import *
+import rich
+from termcolor import colored,cprint
 
 base_url = "https://api.mangadex.org"
 
