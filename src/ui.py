@@ -6,7 +6,7 @@ import requests
 
 window = ctk.CTk()
 window.geometry("800x600")
-
+ctk.set_appearance_mode("dark")
 manga_title = None
 
 
@@ -53,6 +53,8 @@ class DisplayMangaInfos(object):
 
     def download_manga(self,m):
         print(m)
+        c = CollectMangaInfos(m)
+        
     def display_mangas(self):
         for widget in self.window.winfo_children():
             widget.destroy()
