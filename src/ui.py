@@ -48,12 +48,12 @@ class DisplayMangaInfos(object):
 
         self.manga_num = len(self.result)
 
-    def read_btn(self):
-        print("button")
+    def read_btn(self,r):
+        print(r)
 
     def download_manga(self,m):
         print(m)
-        c = CollectMangaInfos(m)
+        x = CollectMangaInfos(m)
         
     def display_mangas(self):
         for widget in self.window.winfo_children():
@@ -62,7 +62,7 @@ class DisplayMangaInfos(object):
         grid_container.grid(row=0, column=0, padx=20, pady=20)
         grid_container.grid_propagate(False)  
 
-        scrollable_frame = ctk.CTkScrollableFrame(master=grid_container, width=1000, height=1000)
+        scrollable_frame = ctk.CTkScrollableFrame(master=grid_container, width=1000, height=900)
         scrollable_frame.pack()
 
         for i in range(3):  # 3 Spalten
@@ -70,24 +70,24 @@ class DisplayMangaInfos(object):
         for i in range(3):  # 3 Zeilen
             grid_container.grid_rowconfigure(i, weight=1)
 
-        for i in range(10):
+        for i in range(self.manga_num):
             row = i // 1
             col = i % 1
 
             block = ctk.CTkFrame(scrollable_frame,width=950,height=150,
             border_width=3,border_color="white")
-            block.grid(row=row,column=col,padx=20,pady=20)
+
+            block.grid(row=row,column=col ,padx=20,pady=10)
 
 
             block_label = ctk.CTkLabel(block,text=f"{self.result[i]}",font=(None,30))
             block_label.place(x=20,y=10)
 
             # description label
-
-            block_button = ctk.CTkButton(block,text="Read",font=(None,30),command=self.read_btn)
-            block_button.place(x=20,y=80)
-            
             curr_manga = block_label.cget("text")
+
+            block_button = ctk.CTkButton(block,text="Read",font=(None,30),)
+            block_button.place(x=20,y=80)
 
             download_button = ctk.CTkButton(block,text="Download",font=(None,30),command= lambda m=curr_manga: self.download_manga(m))  # <-- WAIT THAT WORKED? LAMBDA THE GOAT
             download_button.place(x=200,y=80)
@@ -100,13 +100,22 @@ class ReadMangaScreen(object):
 
 class CollectMangaInfos(object):
     def __init__(self,manga_title):
-        try:
-            manga_id = get_manga_title(manga_title)
-            chapter_id,chapter_number,chapter_1_id,chapter_1_num = get_manga_chapters(manga_id)
-            pages,host,chapter_hash = get_server_data(chapter_id)
-            downloading_chapters(pages,chapter_1_num,manga_title,host,chapter_hash)
-        except Exception as e:
-            print(e)
+                print()
+                manga_id = get_manga_title(manga_title)
+                print()
+                chapters = get_manga_chapters(manga_id)
+                print(chapters)
+                for chapter_id,chapter_number in chapters:
+                    result = get_server_data(chapter_id)
+                    if result is None:
+                        return
+                    pages,host,chapter_hash = result
+
+                    downloading_chapters(pages,chapter_number,manga_title,host,chapter_hash)
+
+                    print("id,num",chapter_id,chapter_number)
+                    print("pages,host,hash",pages,host,chapter_hash)
+                    print("Manga id",manga_id)
 
 
 window.mainloop()

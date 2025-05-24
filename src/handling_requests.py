@@ -1,5 +1,6 @@
 import requests
 import os
+import shutil
 
 # doku: https://api.mangadex.org/docs/04-chapter/feed/
 
@@ -15,16 +16,16 @@ def search_manga_result(manga_title="Frieren"):
     results = []
 
     if r.status_code == 200:
-        for index in range(0,12):
-            print(index)
+        for index in manga_data["data"]:
             try:
-                name = manga_data["data"][index]["attributes"]["title"]["en"]
+                #name = manga_data["data"][index]["attributes"]["title"]["en"]
+                name = index["attributes"]["title"]["en"]
+                results.append(name)
             except Exception as e:
                 print("DEBUG:",e)
                 print("there are less than 11")
             print(name)
 
-            results.append(name)
     return results
 
 def get_manga_title(manga_title):
@@ -34,36 +35,50 @@ def get_manga_title(manga_title):
                 manga_data = manga_title_response.json().get("data")
         
                 manga_id = manga_data[0]["id"]
-                print("Manga id",manga_id)
+                #print("Manga id",manga_id)
         else:
             manga_id = None
-        return manga_id
     except Exception as e:
         print("DEBUG: ",e)
         print("Does this manga exist?")
+    return manga_id
 
 def get_manga_chapters(manga_id,):
-    feed_url = f"{base_url}/manga/{manga_id}/feed?translatedLanguage[]=en&order[chapter]=asc"
-    feed_response = requests.get(feed_url)
+        feed_url = f"{base_url}/manga/{manga_id}/feed?translatedLanguage[]=en&order[chapter]=asc"
+        feed_response = requests.get(feed_url)
 
-    if feed_response.status_code == 200:
-        chapters = feed_response.json()["data"]
-        
-        
-        # get all chapters
-        for i,chapter in enumerate(chapters):
-                chapter_manga = chapters[i]
-                chapter_id = chapter_manga["id"]
-                chapter_number = chapter_manga["attributes"].get("chapter")
-        
-        # get one chapter for testing
-        first_chapter = chapters[0]
-        chapter_1_id = first_chapter["id"] 
-        chapter_1_num = first_chapter["attributes"].get("chapter") 
-        
-        print("Chapter id:",chapter_1_id,"Chapter num",chapter_1_num)
+        if feed_response.status_code == 200:
+            chapters = feed_response.json()["data"]
+            
+            if not chapters:
+                print("no chapters found for this manga:",manga_id)
 
-    return chapter_id,chapter_number,chapter_1_id,chapter_1_num
+            chapter_list = []
+            print(chapter_list)
+
+            # get all chapters
+            for chapter in (chapters):
+                    print(chapter)
+
+                    chapter_id = chapter["id"]
+                    chapter_number = chapter["attributes"].get("chapter")
+
+                    if chapter_number == None:
+                        return
+
+                    chapter_list.append((chapter_id,chapter_number))
+                    print("chapter number",chapter_number)
+            
+            ## get one chapter for testing
+            #first_chapter = chapters[0]
+            #chapter_1_id = first_chapter["id"] 
+            #chapter_1_num = first_chapter["attributes"].get("chapter") 
+            #print("num_1",chapter_1_num)
+            ##print()
+            ##print("Chapter id:",chapter_1_id,"Chapter num",chapter_1_num)
+
+
+            return chapter_list
 
 
 def get_server_data(chapter_id):
@@ -74,26 +89,41 @@ def get_server_data(chapter_id):
         host = server_data["baseUrl"]
         chapter_hash = server_data["chapter"]["hash"]
         pages = server_data["chapter"]["data"]
+        return pages,host,chapter_hash
+    else:
+        print("something went wrong in get_server_data",server_response.status_code)
     
-    return pages,host,chapter_hash
 
 
-def downloading_chapters(pages,chapter_1_num,manga_title,host,chapter_hash):
-    chapter_1_num = int(chapter_1_num)
-    for num in range(chapter_1_num):
-        num += 1
-        folder_path = f"Mangadex/{manga_title}/Chapter_{num}"
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path,exist_ok=True)
+def downloading_chapters(pages,chapter_number,manga_title,host,chapter_hash):
+        chapter_number = int(chapter_number)
+        print(chapter_number)
+        for num in range(chapter_number):
+            print("Started Downloading ...")
+            folder_path = f"Mangadex/{manga_title}/Chapter_{num}"
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path,)
     
-            for page in pages:
-                image_url = f"{host}/data/{chapter_hash}/{page}"
-                image_response = requests.get(image_url)
-                with open(f"{folder_path}/{page}","wb") as file:
-                    file.write(image_response.content)
-            print(f"Downloaded {len(pages)} pages.")
-        else:
-            print("Path already exists.")
+                for page in pages:
+                    image_url = f"{host}/data/{chapter_hash}/{page}"
+                    image_response = requests.get(image_url)
+                    with open(f"{folder_path}/{page}","wb") as file:
+                        file.write(image_response.content)
+                print(f"Downloaded {len(pages)} pages.")
+            else:
+                # delete directory
+                shutil.rmtree(folder_path)
+
+                # create directory
+                os.makedirs(folder_path,)
+    
+                for page in pages:
+                    image_url = f"{host}/data/{chapter_hash}/{page}"
+                    image_response = requests.get(image_url)
+                    with open(f"{folder_path}/{page}","wb") as file:
+                        file.write(image_response.content)
+                print(f"Downloaded {len(pages)} pages.")
+                
     
     
 
