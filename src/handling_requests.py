@@ -57,7 +57,7 @@ def get_manga_chapters(manga_id,):
             print(chapter_list)
 
             # get all chapters
-            for chapter in (chapters):
+            for chapter in chapters:
                     print(chapter)
 
                     chapter_id = chapter["id"]
