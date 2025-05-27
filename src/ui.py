@@ -4,6 +4,7 @@ from handling_requests import get_manga_title,get_manga_chapters,get_server_data
 from handling_requests import search_manga_result
 import requests
 import os
+from PIL import Image 
 
 window = ctk.CTk()
 window.geometry("800x600")
@@ -106,7 +107,7 @@ class DisplayMangaInfos(object):
             block_button = ctk.CTkButton(block,text="Read",font=(None,30),command= lambda r=curr_manga: self.read_btn(r))
             block_button.place(x=20,y=80)
 
-            download_button = ctk.CTkButton(block,text="Download",font=(None,30),command= lambda m=curr_manga: self.download_manga(m))  # <-- WAIT THAT WORKED? LAMBDA THE GOAT
+            download_button = ctk.CTkButton(block,text="Download",font=(None,30),command= lambda m=curr_manga: self.download_manga(m))  
             download_button.place(x=200,y=80)
 
 class ReadMangaScreen(object):
@@ -114,7 +115,12 @@ class ReadMangaScreen(object):
         self.manga_title = manga_title
         self.window = window
         self.manga_path = f"Mangadex/{manga_title}"
-        self.chapter_number = 0
+
+
+        self.chapter_number = 1
+        self.page_number: int = 1
+        self.current_page_number: int = 1
+        self.pages_list = []
 
         self.back_btn = ctk.CTkButton(self.window,text="Back",font=(None,30),command= lambda: self.search_screen())
         self.back_btn.pack()
@@ -125,12 +131,73 @@ class ReadMangaScreen(object):
         self.chapter_label = ctk.CTkLabel(self.window,text=f"Chapter: {self.chapter_number}",font=(None,30))
         self.chapter_label.pack()
 
+        self.manga_field = ctk.CTkFrame(self.window,width=1000,height=800)
+        self.manga_field.pack()
+
+        self.next_page_btn = ctk.CTkButton(self.window,text="Next Page",command=self.next_page)
+        self.next_page_btn.pack()
+
+        self.prev_page_btn = ctk.CTkButton(self.window,text="Previous Page",command=self.prev_page)
+        self.prev_page_btn.pack()
+
+        self.current_page = ctk.CTkLabel(self.window,text=f"Page:{self.current_page_number}")
+        self.current_page.pack()
+
+        self.current_chapter = ctk.CTkLabel(self.window,text="Chapter:{self.current_chapter}")
+
+        self.manga_page_image = ctk.CTkImage(
+        Image.open(f"{self.manga_path}/Chapter_{self.chapter_number}/Page_{self.current_page_number}")
+        ,size=(1000,800))
+        
+        self.manga_image_label = ctk.CTkLabel(self.manga_field,text="",image=self.manga_page_image)
+        self.manga_image_label.pack()
+
         self.get_manga_information()
+
+    def update_image(self,page,chapter):
+        self.manga_page_image = ctk.CTkImage(
+        Image.open(f"{self.manga_path}/Chapter_{chapter}/Page_{page}")
+        ,size=(1000,800))
+
+    def get_pages_chapters(self):
+        chapter_list = os.listdir(self.manga_path)
+        for i,chapter in enumerate(chapter_list):
+            print(i,chapter)
+            self.chapter_number = i
+            page_list = os.listdir(f"{self.manga_path}/Chapter_{i}")
+            for page in page_list:
+                self.pages_list.append(page)
+
+            #print(page_list)
+
+        self.chapter_label.configure(text=f"Chapter (Downloaded): {self.chapter_number}")
+
+    def next_page(self):
+        if self.current_page_number < len(self.pages_list):
+            self.current_page_number += 1
+            self.update_image(self.current_page_number,self.chapter_number)
+            self.current_page.configure(text=f"Page:{self.current_page_number} / {len(self.pages_list)}")
+            self.manga_image_label.configure(image=self.manga_page_image)
+
+    def prev_page(self):
+        if self.current_page_number > 0:
+            self.current_page_number -= 1
+
+            self.update_image(self.current_page_number,self.chapter_number)
+            self.current_page.configure(text=f"Page:{self.current_page_number} / {len(self.pages_list)}")
+            self.manga_image_label.configure(image=self.manga_page_image)
 
     def clear_ui_elements(self):
         self.back_btn.pack_forget()
         self.manga_title_label.pack_forget()
         self.chapter_label.pack_forget()
+
+        self.current_chapter.pack_forget()
+        self.current_page.pack_forget()
+        self.prev_page_btn.pack_forget()
+        self.next_page_btn.pack_forget()
+        self.manga_image_label.pack_forget()
+        self.manga_field.pack_forget()
 
     def search_screen(self):
         self.clear_ui_elements()
@@ -139,11 +206,7 @@ class ReadMangaScreen(object):
     def get_manga_information(self):
         manga_id = get_manga_title(self.manga_title)
         
-        chapter_list = os.listdir(self.manga_path)
-        for i,chapter in enumerate(chapter_list):
-            print(i,chapter)
-            self.chapter_number = i
-        self.chapter_label.configure(text=f"Chapter (Downloaded): {self.chapter_number}")
+        self.get_pages_chapters()
         
         #chapters = get_manga_chapters(manga_id)
         #for chapter_id,chapter_number in chapters:

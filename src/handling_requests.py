@@ -104,23 +104,10 @@ def downloading_chapters(pages,chapter_number,manga_title,host,chapter_hash):
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path,)
     
-                for page in pages:
+                for i,page in enumerate(pages):
                     image_url = f"{host}/data/{chapter_hash}/{page}"
                     image_response = requests.get(image_url)
-                    with open(f"{folder_path}/{page}","wb") as file:
-                        file.write(image_response.content)
-                print(f"Downloaded {len(pages)} pages.")
-            else:
-                # delete directory
-                shutil.rmtree(folder_path)
-
-                # create directory
-                os.makedirs(folder_path,)
-    
-                for page in pages:
-                    image_url = f"{host}/data/{chapter_hash}/{page}"
-                    image_response = requests.get(image_url)
-                    with open(f"{folder_path}/{page}","wb") as file:
+                    with open(f"{folder_path}/Page_{i}","wb") as file:
                         file.write(image_response.content)
                 print(f"Downloaded {len(pages)} pages.")
                 
