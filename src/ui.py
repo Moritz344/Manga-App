@@ -117,8 +117,11 @@ class ReadMangaScreen(object):
         self.manga_path = f"Mangadex/{manga_title}"
 
 
-        self.chapter_number = 1
-        self.page_number: int = 1
+        self.chapter_number = 0
+
+        self.current_chapter_number = 0
+        self.page_number: int = 0
+        self.pages_len = 0
         self.current_page_number: int = 1
         self.pages_list = []
 
@@ -140,52 +143,96 @@ class ReadMangaScreen(object):
         self.prev_page_btn = ctk.CTkButton(self.window,text="Previous Page",command=self.prev_page)
         self.prev_page_btn.pack()
 
+        self.next_chapter_btn = ctk.CTkButton(self.window,text="Next Chapter",command=self.next_chapter)
+        self.next_chapter_btn.pack()
+        self.prev_chapter_btn = ctk.CTkButton(self.window,text="Previous Chapter",command=self.prev_chapter)
+        self.prev_chapter_btn.pack()
+
         self.current_page = ctk.CTkLabel(self.window,text=f"Page:{self.current_page_number}")
         self.current_page.pack()
 
         self.current_chapter = ctk.CTkLabel(self.window,text="Chapter:{self.current_chapter}")
-
-        self.manga_page_image = ctk.CTkImage(
-        Image.open(f"{self.manga_path}/Chapter_{self.chapter_number}/Page_{self.current_page_number}")
-        ,size=(1000,800))
         
+        try:
+            self.manga_page_image = ctk.CTkImage(
+            Image.open(f"{self.manga_path}/Chapter_{self.current_chapter_number}/Page_{self.current_page_number}")
+            ,size=(1000,800))
+        except Exception as e:
+            print(e)
+            
         self.manga_image_label = ctk.CTkLabel(self.manga_field,text="",image=self.manga_page_image)
         self.manga_image_label.pack()
 
         self.get_manga_information()
 
+    def next_chapter(self):
+            print(self.current_chapter_number,self.chapter_number)
+            if self.current_chapter_number <= self.chapter_number - 1:
+                self.current_page_number = 0
+                self.current_chapter_number += 1
+                self.update_image(self.current_page_number,self.current_chapter_number)
+                self.manga_image_label.configure(image=self.manga_page_image)
+                self.update_pages_counter(self.current_chapter_number )
+    def prev_chapter(self):
+            print(self.current_chapter_number,self.chapter_number)
+            if self.current_chapter_number > 0:
+                self.current_page_number = 0
+                self.current_chapter_number -= 1
+                self.update_image(self.current_page_number,self.current_chapter_number)
+                self.manga_image_label.configure(image=self.manga_page_image)
+                self.update_pages_counter(self.current_chapter_number )
+
+    def update_pages_counter(self,chapter_count):
+        try:
+            page_list = os.listdir(f"{self.manga_path}/Chapter_{chapter_count}")
+            self.pages_len = len(page_list)
+            self.current_page.configure(text=f"Page:{self.current_page_number} / {self.pages_len}")
+        except Exception as e:
+            print(e)
+        
+
     def update_image(self,page,chapter):
-        self.manga_page_image = ctk.CTkImage(
-        Image.open(f"{self.manga_path}/Chapter_{chapter}/Page_{page}")
-        ,size=(1000,800))
+        try:
+            self.manga_page_image = ctk.CTkImage(
+            Image.open(f"{self.manga_path}/Chapter_{chapter}/Page_{page}")
+            ,size=(1000,800))
+        except Exception as e:
+            print(e)
 
     def get_pages_chapters(self):
         chapter_list = os.listdir(self.manga_path)
-        for i,chapter in enumerate(chapter_list):
-            print(i,chapter)
-            self.chapter_number = i
-            page_list = os.listdir(f"{self.manga_path}/Chapter_{i}")
-            for page in page_list:
-                self.pages_list.append(page)
+        self.current_chapter_number = len(chapter_list ) -2
+        self.chapter_number = len(chapter_list)
 
             #print(page_list)
 
         self.chapter_label.configure(text=f"Chapter (Downloaded): {self.chapter_number}")
 
     def next_page(self):
-        if self.current_page_number < len(self.pages_list):
+        if self.current_page_number <= self.pages_len - 1:
             self.current_page_number += 1
-            self.update_image(self.current_page_number,self.chapter_number)
-            self.current_page.configure(text=f"Page:{self.current_page_number} / {len(self.pages_list)}")
+            self.update_image(self.current_page_number,self.current_chapter_number)
+
+            self.update_pages_counter(self.current_chapter_number)
+
             self.manga_image_label.configure(image=self.manga_page_image)
+        elif self.current_page_number > self.pages_len:
+            self.current_page_number = 0
+            self.current_chapter_number += 1
+            self.update_image(self.current_page_number,self.current_chapter_number)
+
+            self.update_pages_counter(self.current_chapter_number)
+
+            self.manga_image_label.configure(image=self.manga_page_image)
+            print(f"Next chapter: {self.current_chapter_number}")
 
     def prev_page(self):
         if self.current_page_number > 0:
             self.current_page_number -= 1
 
-            self.update_image(self.current_page_number,self.chapter_number)
-            self.current_page.configure(text=f"Page:{self.current_page_number} / {len(self.pages_list)}")
+            self.update_image(self.current_page_number,self.current_chapter_number)
             self.manga_image_label.configure(image=self.manga_page_image)
+            self.update_pages_counter(self.current_chapter_number)
 
     def clear_ui_elements(self):
         self.back_btn.pack_forget()
@@ -198,6 +245,8 @@ class ReadMangaScreen(object):
         self.next_page_btn.pack_forget()
         self.manga_image_label.pack_forget()
         self.manga_field.pack_forget()
+        self.prev_chapter_btn.pack_forget()
+        self.next_chapter_btn.pack_forget()
 
     def search_screen(self):
         self.clear_ui_elements()
