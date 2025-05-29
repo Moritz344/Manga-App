@@ -12,15 +12,16 @@ def main_window_frame(window,manga_title):
         c.display_mangas()
 
 
-    entry_frame = ctk.CTkFrame(window,width=1200,height=100,fg_color="transparent")
+    entry_frame = ctk.CTkFrame(window,width=2000,height=500,fg_color="transparent")
     entry_frame.pack(side="top",padx=0,pady=10)
 
-    search_btn = ctk.CTkButton(entry_frame,text="Search",height=70,font=(None,30),command=lambda :get_manga_with_name())
+    search_btn = ctk.CTkButton(entry_frame,text="Search",height=70,font=(None,30),fg_color="#7D7D7D",command=lambda :get_manga_with_name(),
+    )
     search_btn.pack(side="left",padx=10,pady=10)
 
 
 
-    search_field = ctk.CTkEntry(entry_frame,width=900,height=70,font=(None,30))
+    search_field = ctk.CTkEntry(entry_frame,width=1300,height=70,font=(None,30),placeholder_text="Search Manga ...",placeholder_text_color="#B3B3B3")
     search_field.pack(side="top",padx=0,pady=10)
 
 
@@ -313,7 +314,7 @@ class DisplayMangaInfos(object):
             curr_manga = block_label.cget("text")
 
 
-            open_btn = ctk.CTkButton(text_block,text="Open",font=(None,20),command= lambda r=curr_manga: self.open_manga(r))
+            open_btn = ctk.CTkButton(text_block,text="Open",fg_color="#7D7D7D",font=(None,20),command= lambda r=curr_manga: self.open_manga(r))
             open_btn.place(x=5,y=50)
 
 
