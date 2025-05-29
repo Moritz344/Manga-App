@@ -3,12 +3,15 @@ import os
 import shutil
 from PIL import Image,ImageTk
 import io
+from concurrent.futures import ThreadPoolExecutor
 # doku: https://api.mangadex.org/docs/04-chapter/feed/
 
 # -- Manga Search Engine
 
 base_url = "https://api.mangadex.org"
 manga_title = None
+
+
 
 def search_manga_result(manga_title="Frieren"):
     r = requests.get(f"{base_url}/manga?title={manga_title}")
@@ -27,6 +30,8 @@ def search_manga_result(manga_title="Frieren"):
             print(name)
 
     return results
+
+
 
 def get_manga_cover(title):
     manga_id = get_manga_title(title)
@@ -57,7 +62,7 @@ def load_cover_image(manga_id,filename):
         if r.status_code == 200:
             image_data = r.content
             image_cover = Image.open(io.BytesIO(image_data))
-            image_cover = image_cover.resize((450,400))
+            image_cover = image_cover.resize((350,350))
             return ImageTk.PhotoImage(image_cover)
         else:
             print("Fehler beim laden des bildes:",r.status_code)

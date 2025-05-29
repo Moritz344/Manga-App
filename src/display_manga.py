@@ -1,6 +1,8 @@
 import customtkinter as ctk
 from handling_requests import *
 from PIL import Image
+from tkinter import *
+import tkinter.font as tkFont
 
 def main_window_frame(window,manga_title):
     def get_manga_with_name():
@@ -216,23 +218,32 @@ class DisplayMangaInfos(object):
         self.manga_title = manga_title
         self.window = window
         self.result = search_manga_result(manga_title)
+
+
+        
+        self.manga_list = []
+        
+        # This is slow
         self.covers = []
 
-        for manga in self.result:
-            manga_id,fileName = get_manga_cover(manga)
-            image_cover = load_cover_image(manga_id,fileName)
+        #for manga in self.result:
+        #        manga_id,fileName = get_manga_cover(manga)
+        #        self.manga_list.append((manga_id))
+        #        self.manga_list.append((fileName))
+        #        image_cover = load_cover_image(manga_id,fileName)
+        #        self.covers.append(image_cover)
 
-            self.covers.append(image_cover)
-
+        manga_id,fileName = get_manga_cover(manga_title)
+        image_cover = load_cover_image(manga_id,fileName)
+        
         self.image_cover = image_cover
-
-
+        print(self.covers)
 
         self.search_field = search_field
         self.search_btn = search_btn
         self.entry_frame = entry_frame
 
-        self.max_manga_num = 6
+        self.max_manga_num = 8
         self.manga_num = self.max_manga_num#len(self.result)
 
     def read_btn(self,r,):
@@ -253,35 +264,63 @@ class DisplayMangaInfos(object):
         print(m)
         x = CollectMangaInfos(m)
         x.download_manga()
-
+    def open_manga(self,r):
+        print(r)
     def display_mangas(self):
+        
+
         for widget in self.window.winfo_children():
             widget.destroy()
 
-        grid_container = ctk.CTkFrame(self.window, width=1000, height=800,fg_color="transparent")
-        grid_container.grid(row=0, column=0, padx=20, pady=20)
-        grid_container.grid_propagate(False)
 
-        scrollable_frame = ctk.CTkScrollableFrame(master=grid_container, width=1800, height=900,fg_color="#272727")
-        scrollable_frame.pack()
+        #grid_container = ctk.CTkFrame(self.window, width=1500, height=1080,fg_color="transparent")
+        #grid_container.grid(row=0, column=0, padx=20, pady=20)
+        #grid_container.grid_propagate(False)
+        #grid_container.columnconfigure(1,weight=1)
+
+        grid_container = ctk.CTkFrame(self.window,width=1500,height=1100,fg_color="transparent")
+        grid_container.pack(padx=10,pady=10)
+
+
+        scrollable_frame = ctk.CTkScrollableFrame(master=grid_container, width=1500,height=800, fg_color="#272727")
+        scrollable_frame.grid()
+        
+
 
 
         for i in range(self.manga_num):
+
             row = i // 3
             col = i % 3
-            block = ctk.CTkFrame(scrollable_frame,width=450,height=400,fg_color="#454343")
+
+            block = ctk.CTkFrame(scrollable_frame,width=350,height=350,fg_color="transparent",corner_radius=0)
             block.grid(row=row,column=col ,padx=75,pady=50)
 
+            text_block = ctk.CTkFrame(scrollable_frame,width=400,height=100,fg_color="transparent",corner_radius=0)
+            text_block.grid(row=row,column=col,padx=28,pady=0,sticky="se")
 
 
-            block_label = ctk.CTkLabel(block,text=f"{self.result[i]}",compound="left",image=self.covers[i],font=(None,30),text_color="white")
-            block_label.place(x=25,y=10)
+
+            block_label = ctk.CTkLabel(text_block,text=f"{self.result[i]}",compound="left",font=(None,20,"bold"),text_color="white",
+            fg_color="transparent")
+            block_label.place(x=5,y=0)
+
+            block_image = ctk.CTkLabel(block,text=f"",image=self.image_cover,)
+            block_image.place(x=0,y=0)
+
 
             # description label
             curr_manga = block_label.cget("text")
 
-            block_button = ctk.CTkButton(block,text="Read",font=(None,30),command= lambda r=curr_manga: self.read_btn(r))
-            block_button.place(x=50,y=330,)
 
-            download_button = ctk.CTkButton(block,text="Download",font=(None,30),command= lambda m=curr_manga: self.download_manga(m))
-            download_button.place(x=240,y=330)
+            open_btn = ctk.CTkButton(text_block,text="Open",font=(None,20),command= lambda r=curr_manga: self.open_manga(r))
+            open_btn.place(x=5,y=50)
+
+
+            #block_button = ctk.CTkButton(grid_container,text="Read",font=(None,30),command= lambda r=curr_manga: self.read_btn(r))
+            #block_button.grid(row=row,column=col,padx=90,pady=0,sticky="se")
+
+            #download_button = ctk.CTkButton(grid_container,text="Download",font=(None,30),command= lambda m=curr_manga: self.download_manga(m))
+            #download_button.grid(row=row,column=col,padx=90,pady=0,sticky="sw")
+
+
