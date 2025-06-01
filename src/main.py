@@ -6,6 +6,10 @@ import os
 from PIL import Image
 from display_manga import DisplayMangaInfos,ReadMangaScreen,main_window_frame
 
+#TODO: mangas speichern in sql lite
+#TODO: ui readmanga screen verbessern = bug fixen mit button verschwindet
+#TODO: ChapterView ui verbessern siehe figma
+
 window = ctk.CTk()
 window.geometry("800x600")
 ctk.set_appearance_mode("dark")

@@ -55,14 +55,14 @@ def get_manga_cover(title):
         print(r_1.status_code)
 
 
-def load_cover_image(manga_id,filename):
+def load_cover_image(manga_id,filename,sizex,sizey):
         cover_image = f"https://uploads.mangadex.org/covers/{manga_id}/{filename}" 
         r = requests.get(cover_image)
 
         if r.status_code == 200:
             image_data = r.content
             image_cover = Image.open(io.BytesIO(image_data))
-            image_cover = image_cover.resize((350,350))
+            image_cover = image_cover.resize((sizex,sizey))
             return ImageTk.PhotoImage(image_cover)
         else:
             print("Fehler beim laden des bildes:",r.status_code)

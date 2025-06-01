@@ -1,7 +1,6 @@
 import customtkinter as ctk
 from handling_requests import *
 from PIL import Image
-from tkinter import *
 import tkinter.font as tkFont
 
 def main_window_frame(window,manga_title):
@@ -65,15 +64,19 @@ class CollectMangaInfos(object):
 
 
 class ReadMangaScreen(object):
-    def __init__(self,manga_title,window):
+    def __init__(self,manga_title,window,chapter_start):
         self.manga_title = manga_title
         self.window = window
-        self.manga_path = f"Mangadex/{manga_title}"
 
+        self.manga_path = f"Mangadex/{manga_title}"
+        self.chapter_start = chapter_start
 
         self.chapter_number = 0
-
-        self.current_chapter_number = 0
+        print("DEBUG",chapter_start)
+        if self.chapter_start == "":
+            self.current_chapter_number = 0
+        else:
+            self.current_chapter_number = chapter_start
         self.page_number: int = 0
         self.pages_len = 50
         self.current_page_number: int = 0
@@ -108,13 +111,20 @@ class ReadMangaScreen(object):
         self.current_chapter = ctk.CTkLabel(self.window,text="Chapter:{self.current_chapter}")
 
         try:
+
             self.manga_page_image = ctk.CTkImage(
             Image.open(f"{self.manga_path}/Chapter_{self.current_chapter_number}/Page_{self.current_page_number}")
             ,size=(1000,800))
         except Exception as e:
-            print(e)
+            print("Failed to load image",e)
+            self.manga_page_image = None
 
-        self.manga_image_label = ctk.CTkLabel(self.manga_field,text="",image=self.manga_page_image)
+        
+        if self.manga_page_image:
+            self.manga_image_label = ctk.CTkLabel(self.manga_field,text="",image=self.manga_page_image)
+        else:
+            self.manga_image_label = ctk.CTkLabel(self.manga_field,text="No Image Available",font=(None,20),text_color="red")
+
         self.manga_image_label.pack()
 
         self.get_manga_information()
@@ -212,7 +222,66 @@ class ReadMangaScreen(object):
 
         self.get_pages_chapters()
 
+class ChapterView(object):
+    def __init__(self,manga_title,window):
+        self.window = window
+        self.path = f"Mangadex/{manga_title}"
+        self.chapter_list = []
+        self.curr_block = ""
+        self.chapter_start_number = 0
 
+        self.frame_1 = ctk.CTkFrame(window,width=800,height=1000)
+        self.frame_1.pack(side="left",expand=True,padx=0,pady=100,)
+
+        self.frame_0 = ctk.CTkFrame(window,width=500,height=1000)
+        self.frame_0.pack(side="right",expand=True,padx=0,pady=100,)
+
+        self.manga_title: str = manga_title
+        manga_id,filename = get_manga_cover(self.manga_title)
+
+        image_cover = load_cover_image(manga_id,filename,800,1000)
+        
+        self.cover_label = ctk.CTkLabel(self.frame_1,text="",image=image_cover)
+        self.cover_label.pack()
+        
+        
+        self.chapter_frame = ctk.CTkScrollableFrame(self.frame_0,width=500,height=1000)
+        self.chapter_frame.pack()
+        
+        self.back_btn = ctk.CTkButton(window,text="Back",font=(None,20),fg_color="#7D7D7D",command=self.back_btn)
+        self.back_btn.pack(side="right",padx=0,pady=0,anchor="se")
+
+        self.get_chapters()
+        self.display_chapter_list()
+    def get_chapters(self):
+        self.chapter_list = os.listdir(self.path)
+    
+    def read_manga(self,m) -> None:
+        chapter_start = m
+        self.clear_all_ui_elements()
+        ReadMangaScreen(self.manga_title,self.window,chapter_start)
+
+    def display_chapter_list(self):
+        for i in range(len(self.chapter_list) ):
+            
+
+            block = ctk.CTkButton(self.chapter_frame,text=f"{self.chapter_list[i]}",
+                                  width=300,height=100,font=(None,30),fg_color="#585858",command= lambda m=self.curr_block: self.read_manga(m))
+
+            block.pack(padx=0,pady=50)
+            # get the current chapter the user wants to start at
+            self.curr_block = i
+
+
+    def clear_all_ui_elements(self):
+        for w in self.window.winfo_children():
+            w.destroy()
+        self.back_btn.pack_forget()
+        self.frame_0.pack_forget()
+        self.frame_1.pack_forget()
+    def back_btn(self):
+        self.clear_all_ui_elements()
+        main_window_frame(self.window,"Naruto")
 
 class DisplayMangaInfos(object):
     def __init__(self,manga_title,window,search_field,search_btn,entry_frame):
@@ -235,7 +304,7 @@ class DisplayMangaInfos(object):
         #        self.covers.append(image_cover)
 
         manga_id,fileName = get_manga_cover(manga_title)
-        image_cover = load_cover_image(manga_id,fileName)
+        image_cover = load_cover_image(manga_id,fileName,350,400)
         
         self.image_cover = image_cover
         print(self.covers)
@@ -247,29 +316,46 @@ class DisplayMangaInfos(object):
         self.max_manga_num = 8
         self.manga_num = self.max_manga_num#len(self.result)
 
+    def check_manga_exist(self,manga_name):
+        path = f"Mangadex/{manga_name}"
+        status = None
+        if os.path.exists(path):
+            print("Manga exists",manga_name)
+            status = True
+        else:
+            status = False
+            print("Manga does not exist or is not downloaded yet",manga_name)
+        return status
+
     def read_btn(self,r,):
         folder_path = f"Mangadex/{r}"
-        if os.path.exists(folder_path):
-            print("Ready to read:",r)
+        status = self.check_manga_exist(r)
+        if status:
             for widget in self.window.winfo_children():
                 widget.destroy()
             self.search_field.pack_forget()
             self.search_btn.pack_forget()
             self.entry_frame.pack_forget()
 
-            ReadMangaScreen(r,self.window)
-        else:
-            print("Download the Manga first! ")
+            #ReadMangaScreen(r,self.window)
 
     def download_manga(self,m):
         print(m)
         x = CollectMangaInfos(m)
         x.download_manga()
-    def open_manga(self,r):
-        print(r)
-    def display_mangas(self):
-        
+    def clear_all_ui_elements(self):
+            for widget in self.window.winfo_children():
+                widget.destroy()
+            self.search_field.pack_forget()
+            self.search_btn.pack_forget()
+            self.entry_frame.pack_forget()
 
+    def open_manga(self,r):
+        status = self.check_manga_exist(r)
+        if status:
+            self.clear_all_ui_elements()
+            ChapterView(r,self.window)
+    def display_mangas(self):
         for widget in self.window.winfo_children():
             widget.destroy()
 
@@ -318,10 +404,10 @@ class DisplayMangaInfos(object):
             open_btn.place(x=5,y=50)
 
 
-            #block_button = ctk.CTkButton(grid_container,text="Read",font=(None,30),command= lambda r=curr_manga: self.read_btn(r))
-            #block_button.grid(row=row,column=col,padx=90,pady=0,sticky="se")
+            #block_button = ctk.CTkButton(text_block,text="Read",font=(None,20),command= lambda r=curr_manga: self.read_btn(r))
+            #block_button.grid()
 
-            #download_button = ctk.CTkButton(grid_container,text="Download",font=(None,30),command= lambda m=curr_manga: self.download_manga(m))
-            #download_button.grid(row=row,column=col,padx=90,pady=0,sticky="sw")
+            #download_button = ctk.CTkButton(text_block,text="Download",font=(None,20),command= lambda m=curr_manga: self.download_manga(m))
+            #download_button.grid()
 
 
