@@ -1,0 +1,40 @@
+{
+    "manga_data": {
+        "manga_title": "naruto",
+        "manga_id": "a787b10a-02d0-46c0-8236-0d01d69ad4a3",
+        "chapter_id": "9c6388db-7121-4724-a0df-0a16c26babad",
+        "chapter_number": "172",
+        "host": "https://cmdxd98sb0x3yprd.mangadex.network",
+        "chapter_hash": "133877e362d3b60020cf531ce74e552e"
+    },
+    "manga_image": {
+        "fileName": "0364b7e0-f9e6-4256-a7d3-118b0c739620.jpg",
+        "pages": [
+            "x1-a589293b77f4a07cba2864a8be270e95ea0dd807001d706f292e6f0eabd1747f.png",
+            "x2-b2d8b3a62125ee884eca223d7487c0a8e6e37be6488bf590e63a559ea9b8d5c3.png",
+            "x3-2987f3d790375baf3bda7465d67d978bb11a69b41835acf2ed77bed7aed32329.png",
+            "x4-897d659d609a3ec637c741566e09a2bf8b0324d5b11e65f81dea3eef6274f631.png",
+            "x5-84b318cd66cf49b05adb64f49e5d5ee89df76ebd3041085388ef25b99d6a8322.png",
+            "x6-10b8242a34946a6a7789136315479440a54257daa9a75f694d6e15e42bcbd353.png",
+            "x7-09e17bf842e9cd19fb52f11472d545e5355ba58e494c7ca36372066fbb1f95eb.png",
+            "x8-7b3ca806831b441b6516650fb0fae648e4d4b305ec540d8984e20578912ef753.png",
+            "x9-72eaa96203c28aa2afed6d76e495bada1af4afb03a2f57ba84dbdc7b29d52691.png",
+            "x10-a4ded20bff0c60b02f0a31cf844958763b9f711b8b053c628e94c0b941953b0b.png",
+            "x11-08e45f3ab1a9ec13a006109e91fdd730b8d899322efe1621949984acb665321f.png",
+            "x12-cf84e9b36c0d9304595210c1a749378c3116c49c36754ffdddad3637d4f1267d.png",
+            "x13-6dee614205050c993359b6617c58e0849bc0711b4a29b1d76e872a4832af07e0.png",
+            "x14-a2ad6d07e80886bfc4a230704ae47047841b2cd43d11e1426305f309abdc6bce.png",
+            "x15-7d4180c1218b83bb157496c0931f40e1397f09e44e9744173f212d00c262f0f1.png",
+            "x16-0de2cbfc546d0bfa81d592b776b51f349503f9e7bb8088e16ff806dfee832753.png",
+            "x17-85bb25d07753984a8056aa4805a4d60db1e88eeee578e56e7db8d5d17c921724.png",
+            "x18-0a4996f22b519ba5613f530074cb29adb7d1ebd1ae0e57a4d48cef1d2f5d5d12.png",
+            "x19-c7511fcb03511d2696858f41c3f242544baf9c6fc917ed23c214ef602e73ea11.png",
+            "x20-2d6c6d2a548aba201a76b50210cedff590df0eb96a40c6ed3187fb674b851c6c.png"
+        ],
+        "cover_url": ""
+    },
+    "settings": {
+        "button_color": "#7D7D7D",
+        "button_hover_color": "#4C4C4C"
+    }
+}
