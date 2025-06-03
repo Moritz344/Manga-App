@@ -13,7 +13,7 @@ manga_title = None
 
 
 
-def search_manga_result(manga_title="Frieren"):
+def search_manga_result(manga_title="Frieren") -> list:
     r = requests.get(f"{base_url}/manga?title={manga_title}")
     manga_data = r.json()
 
@@ -27,11 +27,57 @@ def search_manga_result(manga_title="Frieren"):
                 results.append(name)
             except Exception as e:
                 print("DEBUG:",e)
-            print(name)
+            print("Manga Name:",name)
 
     return results
 
+def get_manga_genre(manga_id) -> list:
+    global base_url
+    url = f"{base_url}/manga/{manga_id}"
 
+    response = requests.get(url)
+    genre_list = []
+
+    try:
+
+        if response.status_code == 200:
+            data = response.json().get("data")
+
+            for i,v in enumerate(data):
+                genre = data["attributes"]["tags"][i]["attributes"]["name"]["en"]
+                print("GENRE",genre)
+                genre_list.append(genre)
+
+        else:
+            print(response.status_code)
+
+    except Exception as e:
+        genre_list = ["No Genres found."]
+        print("DEBUG:",e)
+
+    return genre_list
+
+def get_manga_description(manga_id) -> str:
+    global base_url
+    url = f"{base_url}/manga/{manga_id}"
+
+    response = requests.get(url)
+    
+    try:
+        if response.status_code == 200:
+            data = response.json().get("data")
+
+            description = data["attributes"]["description"]["en"]
+
+        else:
+            print(response.status_code)
+
+
+    except KeyError as e:
+        description = "Description not found."
+        print("DEBUG: (KeyError)",e)
+
+    return description
 
 def get_manga_cover(title):
     manga_id = get_manga_title(title)
@@ -83,6 +129,22 @@ def get_manga_title(manga_title):
         print("Does this manga exist?")
     return manga_id
 
+def get_only_chapters(manga_id):
+        feed_url = f"{base_url}/manga/{manga_id}/feed?translatedLanguage[]=en&order[chapter]=asc"
+        feed_response = requests.get(feed_url)
+
+        if feed_response.status_code == 200:
+            chapters = feed_response.json()["data"]
+
+            if not chapters:
+                print("no chapters found for this manga:",manga_id)
+
+            # get all chapters
+            for chapter in chapters:
+                    chapter_number = chapter["attributes"].get("chapter")
+
+            return chapter_number
+
 def get_manga_chapters(manga_id,):
         feed_url = f"{base_url}/manga/{manga_id}/feed?translatedLanguage[]=en&order[chapter]=asc"
         feed_response = requests.get(feed_url)
@@ -118,7 +180,7 @@ def get_manga_chapters(manga_id,):
             ##print("Chapter id:",chapter_1_id,"Chapter num",chapter_1_num)
 
 
-            return chapter_list
+            return chapter_list,chapter_number
 
 
 def get_server_data(chapter_id):

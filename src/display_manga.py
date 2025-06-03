@@ -2,6 +2,7 @@ import customtkinter as ctk
 from handling_requests import *
 from PIL import Image
 import tkinter.font as tkFont
+from settings import *
 
 is_Downloaded = False
 
@@ -12,24 +13,39 @@ def main_window_frame(window,manga_title):
         c = DisplayMangaInfos(manga_title,main_frame,search_field,search_btn,entry_frame)
         c.display_mangas()
 
+    window.grid_rowconfigure(1, weight=1)
+    window.grid_columnconfigure(0, weight=1)
 
-    entry_frame = ctk.CTkFrame(window,width=2000,height=500,fg_color="transparent")
-    entry_frame.pack(side="top",padx=0,pady=10)
 
-    search_btn = ctk.CTkButton(entry_frame,text="Search",height=70,font=(None,30),fg_color="#7D7D7D",command=lambda :get_manga_with_name(),
+
+    entry_frame = ctk.CTkFrame(window,width=2000,height=500,fg_color="transparent",)
+    entry_frame.grid(row=0,column=0,padx=0,pady=0,sticky="n")
+
+    entry_frame.grid_columnconfigure(0, weight=1)
+    entry_frame.grid_columnconfigure(1, weight=0)
+
+    search_field = ctk.CTkEntry(entry_frame,
+    width=1300,
+    height=70,
+    font=(None,30),
+    placeholder_text="Search Manga ...",
+    placeholder_text_color="#B3B3B3")
+    search_field.grid(row=0,column=1,padx=10,pady=10,sticky="ew")
+
+
+    search_btn = ctk.CTkButton(entry_frame,text="Search",height=70,font=(None,30),fg_color=f"{button_color}",
+    command=lambda :get_manga_with_name(),hover_color=f"{button_hover_color}",
     )
-    search_btn.pack(side="left",padx=10,pady=10)
+    search_btn.grid(row=0,column=0,padx=0,pady=10,)
 
 
 
-    search_field = ctk.CTkEntry(entry_frame,width=1300,height=70,font=(None,30),placeholder_text="Search Manga ...",placeholder_text_color="#B3B3B3")
-    search_field.pack(side="top",padx=0,pady=10)
 
 
 
 
     main_frame = ctk.CTkFrame(window,width=2000,height=2000,fg_color="transparent")
-    main_frame.pack(side="top",anchor="n",padx=0,pady=10,expand=True)
+    main_frame.grid(row=1,column=0,padx=10,pady=0,sticky="nsew")
 
     c = DisplayMangaInfos("naruto",main_frame,search_field,search_btn,entry_frame)
     c.display_mangas()
@@ -106,7 +122,8 @@ class ReadMangaScreen(object):
         self.manga_title_label = ctk.CTkLabel(self.option_field,text=f"{self.manga_title}",font=(None,30))
         self.manga_title_label.pack(padx=0,pady=0)
 
-        self.back_btn = ctk.CTkButton(self.option_field,text="Back",font=(None,30),command= lambda: self.search_screen(),fg_color="#7D7D7D")
+        self.back_btn = ctk.CTkButton(self.option_field,text="Back",font=(None,30),
+        command= lambda: self.search_screen(),fg_color=f"{button_color}",hover_color=f"{button_hover_color}")
         self.back_btn.pack(side="bottom",anchor="s",padx=0,pady=10)
         self.chapter_label = ctk.CTkLabel(self.option_field,text=f"Chapter: {self.chapter_number}",font=(None,30))
         self.chapter_label.pack()
@@ -115,17 +132,19 @@ class ReadMangaScreen(object):
         self.manga_field.grid(row=0, column=1, sticky="n", padx=10, pady=10)
 
 
-        self.next_page_btn = ctk.CTkButton(self.option_field_2,text="",image=self.arrow_image_right,command=self.next_page,
-        fg_color="#7D7D7D")
+        self.next_page_btn = ctk.CTkButton(self.option_field_2,text="",image=self.arrow_image_right,
+        command=self.next_page,fg_color=f"{button_color}",hover_color=f"{button_hover_color}")
         self.next_page_btn.pack(side="right",anchor="s",padx=0,pady=0)
 
         self.prev_page_btn = ctk.CTkButton(self.option_field_2,text="",command=self.prev_page,
-        fg_color="#7D7D7D",image=self.arrow_image_left)
+        fg_color=f"{button_color}",hover_color=f"{button_hover_color}",image=self.arrow_image_left)
         self.prev_page_btn.pack(side="left",anchor="s",padx=0,pady=0)
 
-        self.next_chapter_btn = ctk.CTkButton(self.option_field_2,text="Next Chapter",command=self.next_chapter,fg_color="#7D7D7D",font=(None,20))
+        self.next_chapter_btn = ctk.CTkButton(self.option_field_2,text="Next Chapter",
+        command=self.next_chapter,fg_color=f"{button_color}",hover_color=f"{button_hover_color}",font=(None,20))
         self.next_chapter_btn.pack()
-        self.prev_chapter_btn = ctk.CTkButton(self.option_field_2,text="Prev Chapter",command=self.prev_chapter,fg_color="#7D7D7D",font=(None,20))
+        self.prev_chapter_btn = ctk.CTkButton(self.option_field_2,text="Prev Chapter",
+        command=self.prev_chapter,fg_color=f"{button_color}",hover_color=f"{button_hover_color}",font=(None,20))
         self.prev_chapter_btn.pack()
 
 
@@ -255,37 +274,95 @@ class ReadMangaScreen(object):
 
 class ChapterView(object):
     def __init__(self,manga_title,window):
+        #TODO: get anime genre,status,all chapters
         self.window = window
         self.path = f"Mangadex/{manga_title}"
         self.chapter_list = []
         self.curr_block = ""
         self.chapter_start_number = 0
+        self.all_chapters = None
+        self.description = None
+        self.genres: list = None
 
-        self.frame_1 = ctk.CTkFrame(window,width=800,height=1000)
+        self.frame_1 = ctk.CTkFrame(window,width=800,height=1000,)
         self.frame_1.pack(side="left",expand=True,padx=0,pady=100,)
 
-        self.frame_0 = ctk.CTkFrame(window,width=500,height=1000)
+        self.cover_frame = ctk.CTkFrame(self.frame_1,width=600,height=400,fg_color="transparent")
+        self.cover_frame.place(x=10,y=10,)
+
+        self.info_frame = ctk.CTkFrame(self.frame_1,width=600,)
+        self.info_frame.place(x=300,y=10)
+
+
+
+        self.frame_0 = ctk.CTkFrame(window,width=400,height=1000,fg_color="transparent")
         self.frame_0.pack(side="right",expand=True,padx=0,pady=100,)
 
         self.manga_title: str = manga_title
         manga_id,filename = get_manga_cover(self.manga_title)
 
-        image_cover = load_cover_image(manga_id,filename,800,1000)
+        image_cover = load_cover_image(manga_id,filename,250,300)
         
-        self.cover_label = ctk.CTkLabel(self.frame_1,text="",image=image_cover)
-        self.cover_label.pack()
-        
-        
-        self.chapter_frame = ctk.CTkScrollableFrame(self.frame_0,width=500,height=1000)
-        self.chapter_frame.pack()
-        
-        self.back_btn = ctk.CTkButton(window,text="Back",font=(None,20),fg_color="#7D7D7D",command=self.back_btn)
-        self.back_btn.pack(side="right",padx=0,pady=0,anchor="se")
+        self.cover_label = ctk.CTkLabel(self.cover_frame,text="",anchor="s",image=image_cover)
+        self.cover_label.pack(side="left",padx=0,pady=0,anchor="ne")
 
+        self.get_all_chapters()
+        self.title_label = ctk.CTkLabel(self.info_frame,text=f"{self.manga_title}",font=(None,30))
+        self.title_label.pack(anchor="w",padx=0,pady=0,)
+        
+
+
+        self.chapter_text= ctk.CTkLabel(self.info_frame,text=f"all chapters",font=(None,20),
+        text_color=f"{button_hover_color}")
+        self.chapter_text.pack(anchor="w",padx=0,pady=0,)
+
+        self.chapter_label= ctk.CTkLabel(self.info_frame,text=f"{self.all_chapters}",font=(None,30,"bold"))
+        self.chapter_label.pack(anchor="w",padx=0,pady=0,)
+        
+        self.genre_text = ctk.CTkLabel(self.info_frame,text=f"Genres",
+        text_color=f"{button_hover_color}",font=(None,20))
+        self.genre_text.pack(anchor="w",padx=0,pady=0,)
+
+        self.genre_label = ctk.CTkLabel(self.info_frame,text=f"{self.genres}",font=(None,20))
+        self.genre_label.pack(anchor="w",padx=0,pady=0)
+
+        self.description_text = ctk.CTkLabel(self.frame_1,text=f"Description",
+        text_color=f"{button_hover_color}",font=(None,20))
+        self.description_text.place(x=10,y=350,)
+
+        self.description_label = ctk.CTkLabel(self.frame_1,text=f"{self.description}",font=(None,20),
+        anchor="sw",justify="left",
+        wraplength=580)
+        self.description_label.place(x=10,y=400)
+
+        
+        
+        self.chapter_frame = ctk.CTkScrollableFrame(self.frame_0,width=750,height=1000,fg_color="transparent")
+        self.chapter_frame.pack(side="right",padx=10,pady=0,anchor="ne")
+        
+        self.back_btn = ctk.CTkButton(window,text="Back",font=(None,20),fg_color=f"{button_color}",
+        hover_color=f"{button_hover_color}",command=self.back_btn)
+        self.back_btn.pack(side="right",padx=0,pady=0,anchor="se")
+        
         self.get_chapters()
         self.display_chapter_list()
-    def get_chapters(self):
+    def get_chapters(self) -> None:
+        # get all downloaded chapters
         self.chapter_list = os.listdir(self.path)
+    def get_all_chapters(self):
+        manga_id = get_manga_title(self.manga_title)
+        chapter_number = get_only_chapters(manga_id)
+        self.all_chapters = chapter_number
+
+        # get the description of the manga 
+        description = get_manga_description(manga_id)
+        self.description = description
+
+        # get the genre of the manga 
+        genre_list = get_manga_genre(manga_id)
+        self.genres = genre_list
+        self.genres = ",".join(self.genres)
+
     
     def read_manga(self,m) -> None:
         chapter_start = m
@@ -296,9 +373,14 @@ class ChapterView(object):
     def display_chapter_list(self):
         for i in range(len(self.chapter_list) ):
             
-            print("Button:",i)
-            block = ctk.CTkButton(self.chapter_frame,text=f"Chapter_{i}",
-                                  width=300,height=100,font=(None,30),fg_color="#585858",command= lambda m=self.curr_block: self.read_manga(m))
+            block = ctk.CTkButton(self.chapter_frame,
+            text=f"{i}  ",
+            width=500,
+            height=100,
+            corner_radius=0,
+            anchor="ne",
+            font=(None,30,"bold"),fg_color=f"{block_color}",hover_color=f"{button_hover_color}",
+            command= lambda m=self.curr_block: self.read_manga(m))
 
             block.pack(padx=0,pady=50)
             # get the current chapter the user wants to start at
@@ -311,6 +393,11 @@ class ChapterView(object):
         self.back_btn.pack_forget()
         self.frame_0.pack_forget()
         self.frame_1.pack_forget()
+        self.genre_label.pack_forget()
+        self.genre_text.pack_forget()
+        self.chapter_label.pack_forget()
+        self.chapter_text.pack_forget()
+
     def back_btn(self):
         self.clear_all_ui_elements()
         main_window_frame(self.window,"Naruto")
@@ -345,7 +432,7 @@ class DisplayMangaInfos(object):
         self.search_btn = search_btn
         self.entry_frame = entry_frame
 
-        self.max_manga_num = 8
+        self.max_manga_num = 9
         self.manga_num = self.max_manga_num#len(self.result)
 
     def check_manga_exist(self,manga_name):
@@ -376,9 +463,9 @@ class DisplayMangaInfos(object):
     def clear_all_ui_elements(self):
             for widget in self.window.winfo_children():
                 widget.destroy()
-            self.search_field.pack_forget()
-            self.search_btn.pack_forget()
-            self.entry_frame.pack_forget()
+            self.search_field.grid_forget()
+            self.search_btn.grid_forget()
+            self.entry_frame.grid_forget()
 
     def open_manga(self,r):
         self.check_manga_exist(r)
@@ -400,7 +487,7 @@ class DisplayMangaInfos(object):
         grid_container.pack(padx=10,pady=10)
 
 
-        scrollable_frame = ctk.CTkScrollableFrame(master=grid_container, width=1500,height=800, fg_color="#272727")
+        scrollable_frame = ctk.CTkScrollableFrame(master=grid_container, width=1500,height=980, fg_color="#272727")
         scrollable_frame.grid()
         
 
@@ -431,14 +518,9 @@ class DisplayMangaInfos(object):
             curr_manga = block_label.cget("text")
 
 
-            open_btn = ctk.CTkButton(text_block,text="Open",fg_color="#7D7D7D",font=(None,20),command= lambda r=curr_manga: self.open_manga(r))
+            open_btn = ctk.CTkButton(text_block,text="Open",fg_color=f"{button_color}",font=(None,20),
+            hover_color=f"{button_hover_color}",command= lambda r=curr_manga: self.open_manga(r))
             open_btn.place(x=5,y=50)
 
-
-            #block_button = ctk.CTkButton(text_block,text="Read",font=(None,20),command= lambda r=curr_manga: self.read_btn(r))
-            #block_button.grid()
-
-            #download_button = ctk.CTkButton(text_block,text="Download",font=(None,20),command= lambda m=curr_manga: self.download_manga(m))
-            #download_button.grid()
 
 
