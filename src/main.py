@@ -6,14 +6,14 @@ import os
 from PIL import Image
 from display_manga import DisplayMangaInfos,ReadMangaScreen,main_window_frame
 
-#TODO: Ordne mit grid an
+#TODO: bug bei readmangascreen wenn ich zu dem search screen gehe
+#TODO: json datei benutzen für settings
 #TODO: mangas speichern in sql lite
-#TODO: ui readmanga screen verbessern = bug fixen mit button verschwindet
 #TODO: ChapterView ui verbessern siehe figma
 #TODO: Downloaded Manga Page -> Wo man seine heruntergeladenen Mangas anschauen kann also history oder so
 #TODO: Markierte Mangas Manga Page
+#TODO: hacker theme 
 
-#TODO: ich bin so cooked. Nach einer Woche kann ich das hier nicht mehr lesen bro.
 
 
 window = ctk.CTk()

@@ -180,7 +180,7 @@ def get_manga_chapters(manga_id,):
             ##print("Chapter id:",chapter_1_id,"Chapter num",chapter_1_num)
 
 
-            return chapter_list,chapter_number
+            return chapter_list
 
 
 def get_server_data(chapter_id):
