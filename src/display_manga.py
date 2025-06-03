@@ -58,7 +58,7 @@ class CollectMangaInfos(object):
                 manga_id = get_manga_title(manga_title)
                 print()
                 
-                self.chapters = get_manga_chapters(manga_id)
+                self.chapters= get_manga_chapters(manga_id)
                 print(self.chapters)
 
                 self.manga_id = manga_id
@@ -247,6 +247,8 @@ class ReadMangaScreen(object):
             self.update_pages_counter(self.current_chapter_number)
 
     def clear_ui_elements(self):
+        #for w in self.window.winfo_children():
+        #    w.destroy()
         self.back_btn.pack_forget()
         self.manga_title_label.pack_forget()
         self.chapter_label.pack_forget()
@@ -254,13 +256,7 @@ class ReadMangaScreen(object):
         self.option_field.grid_forget()
         self.option_field_2.grid_forget()
         self.current_chapter.pack_forget()
-        self.current_page.pack_forget()
-        self.prev_page_btn.pack_forget()
-        self.next_page_btn.pack_forget()
-        self.manga_image_label.pack_forget()
         self.manga_field.grid_forget()
-        self.prev_chapter_btn.pack_forget()
-        self.next_chapter_btn.pack_forget()
 
     def search_screen(self):
         self.clear_ui_elements()
@@ -390,13 +386,11 @@ class ChapterView(object):
     def clear_all_ui_elements(self):
         for w in self.window.winfo_children():
             w.destroy()
+
         self.back_btn.pack_forget()
+        self.chapter_frame.pack_forget()
         self.frame_0.pack_forget()
         self.frame_1.pack_forget()
-        self.genre_label.pack_forget()
-        self.genre_text.pack_forget()
-        self.chapter_label.pack_forget()
-        self.chapter_text.pack_forget()
 
     def back_btn(self):
         self.clear_all_ui_elements()
@@ -408,7 +402,11 @@ class DisplayMangaInfos(object):
         self.window = window
         self.result = search_manga_result(manga_title)
 
+        self.grid_container = ctk.CTkFrame(self.window,width=1500,height=1100,fg_color="transparent")
+        self.grid_container.pack(padx=10,pady=10)
 
+        self.scrollable_frame = ctk.CTkScrollableFrame(master=self.grid_container, width=1500,height=900, fg_color="#272727")
+        self.scrollable_frame.grid(row=0,column=0)
         
         self.manga_list = []
         
@@ -474,8 +472,7 @@ class DisplayMangaInfos(object):
         ChapterView(r,self.window)
         #CollectMangaInfos(r)
     def display_mangas(self):
-        for widget in self.window.winfo_children():
-            widget.destroy()
+        
 
 
         #grid_container = ctk.CTkFrame(self.window, width=1500, height=1080,fg_color="transparent")
@@ -483,13 +480,12 @@ class DisplayMangaInfos(object):
         #grid_container.grid_propagate(False)
         #grid_container.columnconfigure(1,weight=1)
 
-        grid_container = ctk.CTkFrame(self.window,width=1500,height=1100,fg_color="transparent")
-        grid_container.pack(padx=10,pady=10)
 
 
-        scrollable_frame = ctk.CTkScrollableFrame(master=grid_container, width=1500,height=980, fg_color="#272727")
-        scrollable_frame.grid()
         
+
+        for widget in self.scrollable_frame.winfo_children():
+            widget.destroy()
 
 
 
@@ -498,10 +494,10 @@ class DisplayMangaInfos(object):
             row = i // 3
             col = i % 3
 
-            block = ctk.CTkFrame(scrollable_frame,width=350,height=350,fg_color="transparent",corner_radius=0)
+            block = ctk.CTkFrame(self.scrollable_frame,width=350,height=350,fg_color="transparent",corner_radius=0)
             block.grid(row=row,column=col ,padx=75,pady=50)
 
-            text_block = ctk.CTkFrame(scrollable_frame,width=400,height=100,fg_color="transparent",corner_radius=0)
+            text_block = ctk.CTkFrame(self.scrollable_frame,width=400,height=100,fg_color="transparent",corner_radius=0)
             text_block.grid(row=row,column=col,padx=28,pady=0,sticky="se")
 
 
@@ -521,6 +517,8 @@ class DisplayMangaInfos(object):
             open_btn = ctk.CTkButton(text_block,text="Open",fg_color=f"{button_color}",font=(None,20),
             hover_color=f"{button_hover_color}",command= lambda r=curr_manga: self.open_manga(r))
             open_btn.place(x=5,y=50)
+
+
 
 
 
