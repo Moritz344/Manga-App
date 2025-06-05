@@ -84,8 +84,10 @@ class CollectMangaInfos(object):
 
 
 
-class ReadMangaScreen(object):
+class ReadMangaScreen:
     def __init__(self,manga_title,window,chapter_start):
+        # TODO: ui elemente hier verschieben sich 
+
         self.manga_title = manga_title
         self.window = window
 
@@ -133,7 +135,11 @@ class ReadMangaScreen(object):
         self.chapter_label.pack()
 
         self.manga_field = ctk.CTkFrame(self.window,width=1000,height=800)
-        self.manga_field.grid(row=0, column=1, sticky="n", padx=10, pady=10)
+        self.manga_field.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+
+        self.window.grid_rowconfigure(0, weight=1)
+        self.window.grid_columnconfigure(1, weight=1)
+
 
 
         self.next_page_btn = ctk.CTkButton(self.option_field_2,text="",image=self.arrow_image_right,
@@ -156,7 +162,6 @@ class ReadMangaScreen(object):
         font=(None,30,"bold"))
         self.current_page.pack()
 
-        self.current_chapter = ctk.CTkLabel(self.window,text="Chapter:{self.current_chapter}")
 
         try:
 
@@ -177,6 +182,12 @@ class ReadMangaScreen(object):
         self.manga_image_label.pack()
 
         self.get_manga_information()
+
+    def reset_grid_config(self):
+        for i in range(3):
+            self.window.grid_columnconfigure(i,weight=0)
+        for i in range(2):
+            self.window.grid_rowconfigure(i,weight=0)
 
     def next_chapter(self):
             print(self.current_chapter_number,self.chapter_number)
@@ -247,25 +258,27 @@ class ReadMangaScreen(object):
     def prev_page(self):
         if self.current_page_number > 0:
             self.current_page_number -= 1
-
+            
             self.update_image(self.current_page_number,self.current_chapter_number)
             self.manga_image_label.configure(image=self.manga_page_image)
             self.update_pages_counter(self.current_chapter_number)
 
     def clear_ui_elements(self):
-        #for w in self.window.winfo_children():
-        #    w.destroy()
-        self.back_button.pack_forget()
-        self.manga_title_label.pack_forget()
-        self.chapter_label.pack_forget()
-        
-        self.option_field.grid_forget()
-        self.option_field_2.grid_forget()
-        self.current_chapter.pack_forget()
-        self.manga_field.grid_forget()
+        for w in self.window.winfo_children():
+            w.destroy()
+        #self.back_button.destroy()
+        #self.manga_title_label.destroy()
+        #self.chapter_label.destroy()
+        #self.next_page_btn.destroy()
+        #self.prev_page_btn.destroy()
+        #self.option_field.destroy()
+        #self.option_field_2.destroy()
+        #self.current_chapter.destroy()
+        #self.manga_field.destroy()
 
     def search_screen(self):
         self.clear_ui_elements()
+        self.reset_grid_config()
         main_window_frame(self.window,self.manga_title)
 
     def get_manga_information(self):
@@ -274,7 +287,7 @@ class ReadMangaScreen(object):
 
         self.get_pages_chapters()
 
-class ChapterView(object):
+class ChapterView:
     def __init__(self,manga_title,window):
 
         #TODO: get anime genre,status,all chapters
@@ -292,7 +305,7 @@ class ChapterView(object):
         self.cover_frame = ctk.CTkFrame(self.frame_1,width=600,height=400,fg_color="transparent")
         self.cover_frame.place(x=10,y=10,)
 
-        self.info_frame = ctk.CTkFrame(self.frame_1,width=600,)
+        self.info_frame = ctk.CTkFrame(self.frame_1,width=600,fg_color="transparent")
         self.info_frame.place(x=300,y=10)
 
 
@@ -348,17 +361,33 @@ class ChapterView(object):
         self.description_label.place(x=10,y=530)
 
         
+        self.chapter_header = ctk.CTkLabel(self.window,text="Chapters",font=(None,30))
+        self.chapter_header.pack()
+        
         
         self.chapter_frame = ctk.CTkScrollableFrame(self.frame_0,width=750,height=1000,fg_color="transparent")
-        self.chapter_frame.pack(side="right",padx=10,pady=0,anchor="ne")
+        self.chapter_frame.pack(side="left",padx=10,pady=0,anchor="ne")
+
+        self.combobox_var = ctk.StringVar(value="Start From First")
+        self.order_chapter = ctk.CTkComboBox(self.window,
+        values=["Start From Last","Start From First"],state="readonly",variable=self.combobox_var,
+                                             command=self.combobox_order)
+        self.order_chapter.pack()
+
        
         self.back_button = ctk.CTkButton(window,text="Back",font=(None,20),fg_color=f"{button_color}",
                                              hover_color=f"{button_hover_color}",command=self.back_btn)
         self.back_button.pack(side="right",padx=0,pady=0,anchor="se")
         
         self.get_chapters()
-        self.display_chapter_list()
-
+        self.combobox_order(self.combobox_var.get())
+    
+    def combobox_order(self,v):
+        if v == "Start From Last":
+            self.display_chapter_list("last")
+        elif v == "Start From First":
+            self.display_chapter_list("start")
+            
     def continue_manga(self):
         chapter_start = chapter_left
         self.clear_all_ui_elements()
@@ -394,25 +423,49 @@ class ChapterView(object):
             print(f"DEBUG: Manga start is at chapter {m}")
             self.clear_all_ui_elements()
             ReadMangaScreen(self.manga_title,self.window,chapter_start)
-            write_data_to_json("user_var",f"{self.manga_title}",chapter_start+1)
+            write_data_to_json("user_var",f"{self.manga_title}",m)
         except Exception as e:
             print(e)
 
-    def display_chapter_list(self):
-        for i in range(len(self.chapter_list) ):
-            
-            block = ctk.CTkButton(self.chapter_frame,
-            text=f"{i}  ",
-            width=500,
-            height=100,
-            corner_radius=0,
-            anchor="ne",
-            font=(None,30,"bold"),fg_color=f"{block_color}",hover_color=f"{button_hover_color}",
-            command= lambda m=self.curr_block: self.read_manga(m))
+    def update_chapter_list(self):
+        for widget in self.chapter_frame.winfo_children():
+            widget.destroy()
+        
 
-            block.pack(padx=0,pady=50)
-            # get the current chapter the user wants to start at
-            self.curr_block = i
+    def display_chapter_list(self,order):
+        if order == "start":
+            self.update_chapter_list()
+            for i in range(len(self.chapter_list) ):
+                
+                block = ctk.CTkButton(self.chapter_frame,
+                text=f"{i}  ",
+                width=500,
+                height=100,
+                corner_radius=0,
+                anchor="ne",
+                font=(None,30,"bold"),fg_color=f"{block_color}",hover_color=f"{button_hover_color}",
+                command= lambda m=self.curr_block: self.read_manga(m))
+
+                block.pack(padx=0,pady=5,anchor="w")
+                # get the current chapter the user wants to start at
+                self.curr_block = i
+        elif order == "last":
+            self.update_chapter_list()
+            chapter_len = len(self.chapter_list)
+            for i in range(chapter_len-1,-1,-1):
+                block = ctk.CTkButton(self.chapter_frame,
+                text=f"{i}  ",
+                width=500,
+                height=100,
+                corner_radius=0,
+                anchor="ne",
+                font=(None,30,"bold"),fg_color=f"{block_color}",hover_color=f"{button_hover_color}",
+                command= lambda m=self.curr_block: self.read_manga(m))
+
+                block.pack(padx=0,pady=5,anchor="w")
+                # get the current chapter the user wants to start at
+                self.curr_block = i - 1
+                print("curr_block",self.curr_block)
 
 
     def clear_all_ui_elements(self):
@@ -420,17 +473,20 @@ class ChapterView(object):
             for w in self.window.winfo_children():
                 w.destroy()
 
-            self.back_button.pack_forget()
-            self.chapter_frame.pack_forget()
-            self.frame_0.pack_forget()
-            self.frame_1.pack_forget()
+            #self.back_button.destroy()
+            #self.chapter_label.destroy()
+            #self.chapter_frame.destroy()
+            #self.frame_0.destroy()
+            #self.frame_1.destroy()
+            #self.chapter_header.destroy()
+            #self.combobox_order.destroy()
         except Exception as e:
             print(e)
     def back_btn(self):
         self.clear_all_ui_elements()
         main_window_frame(self.window,"Naruto")
 
-class DisplayMangaInfos(object):
+class DisplayMangaInfos:
     def __init__(self,manga_title,window,search_field,search_btn,entry_frame):
 
         self.manga_title = manga_title
@@ -439,8 +495,9 @@ class DisplayMangaInfos(object):
 
         self.grid_container = ctk.CTkFrame(self.window,width=1500,height=1100,fg_color="transparent")
         self.grid_container.pack(padx=10,pady=10)
-
-        self.scrollable_frame = ctk.CTkScrollableFrame(master=self.grid_container, width=1500,height=900, fg_color="#272727")
+        
+        self.scrollable_frame = ctk.CTkScrollableFrame(master=self.grid_container, 
+        width=1500,height=900, fg_color="#272727")
         self.scrollable_frame.grid(row=0,column=0)
         
         self.manga_list = []
@@ -479,34 +536,22 @@ class DisplayMangaInfos(object):
             d = CollectMangaInfos(manga_name)
             d.download_manga()
 
-    def read_btn(self,r,):
-        folder_path = f"Mangadex/{r}"
-        status = self.check_manga_exist(r)
-        if status:
-            for widget in self.window.winfo_children():
-                widget.destroy()
-            self.search_field.pack_forget()
-            self.search_btn.pack_forget()
-            self.entry_frame.pack_forget()
-
-            #ReadMangaScreen(r,self.window)
-
     def download_manga(self,m):
         print(m)
         x = CollectMangaInfos(m)
         x.download_manga()
     def clear_all_ui_elements(self):
+            self.scrollable_frame.grid_forget()
             for widget in self.window.winfo_children():
                 widget.destroy()
-            self.search_field.grid_forget()
-            self.search_btn.grid_forget()
-            self.entry_frame.grid_forget()
+            self.search_field.destroy()
+            self.search_btn.destroy()
+            self.entry_frame.destroy()
 
     def open_manga(self,r):
-
         self.check_manga_exist(r)
         write_data_to_json("manga_data","manga_title",r)
-        write_data_to_json("user_var",f"{r}",chapter_left)
+        write_data_to_json("user_var",f"{r}",0)
         self.clear_all_ui_elements()
         ChapterView(r,self.window)
     def display_mangas(self):
