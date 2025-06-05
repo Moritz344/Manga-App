@@ -132,12 +132,14 @@ def get_manga_title(manga_title):
 def get_only_chapters(manga_id):
         feed_url = f"{base_url}/manga/{manga_id}/feed?translatedLanguage[]=en&order[chapter]=asc"
         feed_response = requests.get(feed_url)
+        
 
         if feed_response.status_code == 200:
             chapters = feed_response.json()["data"]
 
             if not chapters:
                 print("no chapters found for this manga:",manga_id)
+                error = "404"
 
             # get all chapters
             for chapter in chapters:

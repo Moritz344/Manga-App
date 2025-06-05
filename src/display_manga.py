@@ -5,6 +5,8 @@ import tkinter.font as tkFont
 from settings import *
 from ctk_components import CTkLoader
 from write_to_json import write_data_to_json
+from CTkMessagebox import CTkMessagebox
+import tkinter as tk
 
 is_Downloaded = False
 
@@ -14,8 +16,7 @@ def main_window_frame(window,manga_title):
 
         manga_title = search_field.get()
         print(manga_title)
-        c = DisplayMangaInfos(manga_title,main_frame,search_field,search_btn,entry_frame)
-        c.display_mangas()
+        c.update_manga(manga_title)
 
     window.grid_rowconfigure(1, weight=1)
     window.grid_columnconfigure(0, weight=1)
@@ -51,7 +52,7 @@ def main_window_frame(window,manga_title):
     main_frame = ctk.CTkFrame(window,width=2000,height=2000,fg_color="transparent")
     main_frame.grid(row=1,column=0,padx=10,pady=0,sticky="nsew")
 
-    c = DisplayMangaInfos("naruto",main_frame,search_field,search_btn,entry_frame)
+    c = DisplayMangaInfos("pokemon",main_frame,search_field,search_btn,entry_frame)
     c.display_mangas()
 
     return manga_title
@@ -70,6 +71,8 @@ class CollectMangaInfos(object):
 
 
     def download_manga(self):
+        error = ""
+        try:
                 for chapter_id,chapter_number in self.chapters:
                     result = get_server_data(chapter_id)
                     if result is None:
@@ -81,8 +84,9 @@ class CollectMangaInfos(object):
                     print("id,num",chapter_id,chapter_number)
                     print("pages,host,hash",pages,host,chapter_hash)
                     print("Manga id",self.manga_id)
-
-
+        except Exception as e:
+            error = e
+        return error
 
 class ReadMangaScreen:
     def __init__(self,manga_title,window,chapter_start):
@@ -299,6 +303,7 @@ class ChapterView:
         self.description = None
         self.genres: list = None
 
+
         self.frame_1 = ctk.CTkFrame(window,width=800,height=1000,)
         self.frame_1.pack(side="left",expand=True,padx=0,pady=100,)
 
@@ -361,23 +366,24 @@ class ChapterView:
         self.description_label.place(x=10,y=530)
 
         
-        self.chapter_header = ctk.CTkLabel(self.window,text="Chapters",font=(None,30))
-        self.chapter_header.pack()
         
         
         self.chapter_frame = ctk.CTkScrollableFrame(self.frame_0,width=750,height=1000,fg_color="transparent")
-        self.chapter_frame.pack(side="left",padx=10,pady=0,anchor="ne")
+        self.chapter_frame.pack(side="left",padx=10,pady=30,anchor="ne")
+
+
+
 
         self.combobox_var = ctk.StringVar(value="Start From First")
-        self.order_chapter = ctk.CTkComboBox(self.window,
+        self.order_chapter = ctk.CTkComboBox(self.frame_0,
         values=["Start From Last","Start From First"],state="readonly",variable=self.combobox_var,
                                              command=self.combobox_order)
-        self.order_chapter.pack()
+        self.order_chapter.place(x=15,y=0)
 
        
-        self.back_button = ctk.CTkButton(window,text="Back",font=(None,20),fg_color=f"{button_color}",
+        self.back_button = ctk.CTkButton(self.frame_1,text="Back",font=(None,20),fg_color=f"{button_color}",
                                              hover_color=f"{button_hover_color}",command=self.back_btn)
-        self.back_button.pack(side="right",padx=0,pady=0,anchor="se")
+        self.back_button.place(x=10,y=780)
         
         self.get_chapters()
         self.combobox_order(self.combobox_var.get())
@@ -403,7 +409,7 @@ class ChapterView:
         self.chapter_list = os.listdir(self.path)
     def get_all_chapters(self):
         manga_id = get_manga_title(self.manga_title)
-        chapter_number = get_only_chapters(manga_id)
+        chapter_number= get_only_chapters(manga_id)
         self.all_chapters = chapter_number
 
         # get the description of the manga 
@@ -499,6 +505,9 @@ class DisplayMangaInfos:
         self.scrollable_frame = ctk.CTkScrollableFrame(master=self.grid_container, 
         width=1500,height=900, fg_color="#272727")
         self.scrollable_frame.grid(row=0,column=0)
+
+
+        self.progressbar = ctk.CTkProgressBar(self.window, orientation="horizontal")
         
         self.manga_list = []
         
@@ -527,21 +536,37 @@ class DisplayMangaInfos:
         loader = CTkLoader(master=window, opacity=0.8, width=40, height=40)
         window.after(500, loader.stop_loader) 
 
+
+    def start_progressbar(self):
+        pass
+    #self.progressbar.pack()
+        #self.progressbar.start()
+    
+    def update_manga(self, new_title):
+        self.manga_title = new_title
+        self.result = search_manga_result(new_title)
+        
+        manga_id, fileName = get_manga_cover(new_title)
+        self.image_cover = load_cover_image(manga_id, fileName, 350, 400)
+        
+        self.display_mangas()
+
+
+
     def check_manga_exist(self,manga_name):
         path = f"Mangadex/{manga_name}"
         if os.path.exists(path):
             print("Manga exists",manga_name)
         else:
+            self.start_progressbar()
             print("Downloading Manga now.",manga_name)
             d = CollectMangaInfos(manga_name)
-            d.download_manga()
+            error = d.download_manga()
+        
+            return error
 
-    def download_manga(self,m):
-        print(m)
-        x = CollectMangaInfos(m)
-        x.download_manga()
     def clear_all_ui_elements(self):
-            self.scrollable_frame.grid_forget()
+        #self.scrollable_frame.grid_forget()
             for widget in self.window.winfo_children():
                 widget.destroy()
             self.search_field.destroy()
@@ -549,23 +574,24 @@ class DisplayMangaInfos:
             self.entry_frame.destroy()
 
     def open_manga(self,r):
-        self.check_manga_exist(r)
-        write_data_to_json("manga_data","manga_title",r)
-        write_data_to_json("user_var",f"{r}",0)
-        self.clear_all_ui_elements()
-        ChapterView(r,self.window)
+        error = self.check_manga_exist(r)
+        if not error :
+            write_data_to_json("manga_data","manga_title",r)
+            write_data_to_json("user_var",f"{r}",0)
+            self.clear_all_ui_elements()
+            ChapterView(r,self.window)
+        else:
+            msgbox = CTkMessagebox(
+                self.window,
+                title="Error",
+                message="I was not able to download this manga.",
+                icon="cancel",
+                justify="center"
+            )
+
     def display_mangas(self):
         
 
-
-        #grid_container = ctk.CTkFrame(self.window, width=1500, height=1080,fg_color="transparent")
-        #grid_container.grid(row=0, column=0, padx=20, pady=20)
-        #grid_container.grid_propagate(False)
-        #grid_container.columnconfigure(1,weight=1)
-
-
-
-        
 
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
