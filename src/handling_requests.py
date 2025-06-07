@@ -13,7 +13,7 @@ manga_title = None
 
 
 
-def search_manga_result(manga_title="Frieren") -> list:
+def search_manga_result(manga_title) -> list:
     r = requests.get(f"{base_url}/manga?title={manga_title}")
     manga_data = r.json()
 
@@ -201,9 +201,9 @@ def get_server_data(chapter_id):
 
 def downloading_chapters(pages,chapter_number,manga_title,host,chapter_hash):
         chapter_number = int(chapter_number)
-        print(chapter_number)
+        #print(chapter_number)
+        print("Started Downloading ...")
         for num in range(chapter_number):
-            print("Started Downloading ...")
             folder_path = f"Mangadex/{manga_title}/Chapter_{num}"
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path,)

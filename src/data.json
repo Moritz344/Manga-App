@@ -1,11 +1,6 @@
 {
     "manga_data": {
-        "manga_title": "Naruto",
-        "manga_id": "a787b10a-02d0-46c0-8236-0d01d69ad4a3",
-        "chapter_id": "9c6388db-7121-4724-a0df-0a16c26babad",
-        "chapter_number": "172",
-        "host": "https://cmdxd98sb0x3yprd.mangadex.network",
-        "chapter_hash": "133877e362d3b60020cf531ce74e552e"
+        "manga_title": "Pok\u00e9mon - Midorihana Yasaiko's Pixiv Oneshots"
     },
     "manga_image": {
         "fileName": "0364b7e0-f9e6-4256-a7d3-118b0c739620.jpg",
@@ -20,7 +15,23 @@
         "color_blue": "#1C2589"
     },
     "user_var": {
-        "Naruto (Official Colored)": 4,
-        "Naruto": 4
+        "Naruto (Official Colored)": 0,
+        "Naruto": 0,
+        "Renge to Naruto!": 0,
+        "NARUTO Fanfiction  : Reborn / Rebirth": 2,
+        "NARUTO: Konoha Shinden\u2014Yukemuri Ninpouchou": 0,
+        "Naruto: The Whorl within the Spiral": 0,
+        "Pok\u00e9mon SPECIAL": 0,
+        "Pok\u00e9mon SPECIAL - Sun & Moon": 0,
+        "Sousou no Frieren": 0,
+        "Sousou no Frieren - kmtakpk's Frieren Koma (Doujinshi)": 0,
+        "Sousou no Frieren - Gaku Paro na Shutaferu (Doujinshi)": 0,
+        "Good night (Sousou no Frieren) (Doujinshi)": 0,
+        "Sousou no Frieren Anthology ~Kotonaru Tabi o Tanoshimu Mahou~": 0,
+        "Sousou no Frieren - Kudaranai Nichijou (Doujinshi)": 0,
+        "Pok\u00e9mon Diamond and Pearl Comic (Doujinshi)": 0,
+        "Suufungo no Mirai ga Wakaru You ni Natta Kedo, Onnagokoro wa Wakaranai.": "",
+        "Meguru Mirai": "",
+        "Pok\u00e9mon - Midorihana Yasaiko's Pixiv Oneshots": 0
     }
 }
