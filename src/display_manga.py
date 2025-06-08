@@ -8,6 +8,7 @@ from write_to_json import write_data_to_json
 from CTkMessagebox import CTkMessagebox
 import tkinter as tk
 import random
+import shutil
 
 is_Downloaded = False
 
@@ -53,12 +54,10 @@ def main_window_frame(window,manga_title):
     main_frame = ctk.CTkFrame(window,width=2000,height=2000,fg_color="transparent")
     main_frame.grid(row=1,column=0,padx=10,pady=0,sticky="nsew")
 
-    RANDOM_MANGA_CHOICE = ["Naruto","Frieren","The rising of the shield hero","Rascal does not Dream",
-    "The angel next door"] 
-    
+    popular_manga = get_popular_manga()   
     # TODO Popular manga anzeigen:
-    c = DisplayMangaInfos(random.choice(RANDOM_MANGA_CHOICE),main_frame,search_field,search_btn,entry_frame)
-    c.display_mangas()
+    c = DisplayMangaInfos(None,main_frame,search_field,search_btn,entry_frame)
+    c.show_popular_manga(popular_manga)
 
     return manga_title
 
@@ -102,7 +101,6 @@ class CollectMangaInfos(object):
 
 class ReadMangaScreen:
     def __init__(self,manga_title,window,chapter_start):
-        # TODO: ui elemente hier verschieben sich 
 
         self.manga_title = manga_title
         self.window = window
@@ -306,7 +304,6 @@ class ReadMangaScreen:
 class ChapterView:
     def __init__(self,manga_title,window):
 
-        #TODO: get anime genre,status,all chapters
         self.window = window
         self.path = f"Mangadex/{manga_title}"
         self.chapter_list = []
@@ -392,6 +389,10 @@ class ChapterView:
                                              command=self.combobox_order)
         self.order_chapter.place(x=15,y=0)
 
+        self.delete_btn = ctk.CTkButton(self.frame_1,text="Delete Manga",
+        font=(None,20),fg_color="#e05033",hover_color=f"#a5250b",command=lambda: self.delete_manga(True))
+        self.delete_btn.place(x=200,y=780)
+
        
         self.back_button = ctk.CTkButton(self.frame_1,text="Back",font=(None,20),fg_color=f"{button_color}",
                                              hover_color=f"{button_hover_color}",command=self.back_btn)
@@ -399,6 +400,21 @@ class ChapterView:
         
         self.get_chapters()
         self.combobox_order(self.combobox_var.get())
+
+    def delete_manga(self,show_message):
+        try:
+            if os.path.exists(self.path):
+                shutil.rmtree(self.path)
+                print(f"Successfully Removed: {self.path}")
+                if show_message:
+                    CTkMessagebox(
+                    self.window,
+                    title="Remove Manga",
+                    message=f"Successfully Removed {self.manga_title}",
+                    icon="cancel",justify="center")
+                self.back_btn()
+        except Exception as e:
+            print(e)
     
     def combobox_order(self,v):
         if v == "Start From Last":
@@ -520,6 +536,7 @@ class DisplayMangaInfos:
 
         self.manga_title = manga_title
         self.window = window
+
         self.result = search_manga_result(manga_title)
 
 
@@ -563,10 +580,8 @@ class DisplayMangaInfos:
         window.after(500, loader.stop_loader) 
 
 
-    def start_progressbar(self):
-        pass
-    #self.progressbar.pack()
-        #self.progressbar.start()
+    def show_popular_manga(self,popular_manga):
+            self.display_mangas(popular_manga,len(popular_manga))
     
     def update_manga(self, new_title):
         self.manga_title = new_title
@@ -576,7 +591,7 @@ class DisplayMangaInfos:
         manga_id, fileName = get_manga_cover(new_title)
         self.image_cover = load_cover_image(manga_id, fileName, 350, 400)
         
-        self.display_mangas()
+        self.display_mangas(self.result,len(self.result))
 
 
 
@@ -627,7 +642,7 @@ class DisplayMangaInfos:
         else:
             self.message_box_func(True)
 
-    def display_mangas(self):
+    def display_mangas(self,result,length,):
         
 
 
@@ -636,7 +651,7 @@ class DisplayMangaInfos:
 
 
 
-        for i in range(self.manga_num):
+        for i in range(length):
 
                 row = i // 3
                 col = i % 3
@@ -650,7 +665,7 @@ class DisplayMangaInfos:
 
                 try:
                     block_label = ctk.CTkLabel(
-                    text_block,text=f"{self.result[i]}",compound="left",font=(None,20,"bold"),text_color="white",
+                    text_block,text=f"{result[i]}",compound="left",font=(None,20,"bold"),text_color="white",
                     fg_color="transparent")
                 except Exception as e:
                     print(e)
