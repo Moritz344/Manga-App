@@ -57,6 +57,27 @@ def get_manga_genre(manga_id) -> list:
 
     return genre_list
 
+def get_popular_manga() -> list:
+    url = "https://api.mangadex.org/manga?limit=10&order[followedCount]=desc"
+
+    r = requests.get(url)
+    popular_manga = []
+
+    if r.status_code == 200:
+        data = r.json().get("data")
+        
+        for num in range(0,len(data)):
+            try:
+                title = data[num]["attributes"]["title"]["en"]
+            except KeyError:
+                title = data[num]["attributes"]["title"]["ja-ro"]
+            popular_manga.append(title)
+
+        return popular_manga
+
+    else:
+        print(r.status_code)
+
 def get_manga_description(manga_id) -> str:
     global base_url
     url = f"{base_url}/manga/{manga_id}"
