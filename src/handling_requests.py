@@ -31,6 +31,48 @@ def search_manga_result(manga_title) -> list:
 
     return results
 
+def get_manga_status(manga_id) -> str:
+    global base_url
+    url = f"{base_url}/manga/{manga_id}"
+    
+    try:
+        r = requests.get(url);
+        if r.status_code == 200:
+            data = r.json().get("data")
+
+            manga_status = data["attributes"]["status"]
+            
+        else:
+            print(r.status_code)
+    except Exception as e:
+        manga_status = "No Status Found"
+        print("DEBUG (manga_status):",e)
+    
+    return manga_status
+
+def get_random_manga() -> list:
+    global base_url
+    url = f"{base_url}/manga/random"
+    random_manga_list = []
+
+    try:
+        for response in range(7):
+            r = requests.get(url)
+
+            if r.status_code == 200:
+                data = r.json().get("data")
+
+                random_manga = data["attributes"]["title"]["en"]
+                random_manga_list.append(random_manga)
+
+            else:
+                print(r.status_code)
+
+    except Exception as e:
+        random_manga_list = []
+        print("DEBUG (random_manga)",e)
+    return random_manga_list
+
 def get_manga_genre(manga_id) -> list:
     global base_url
     url = f"{base_url}/manga/{manga_id}"
@@ -42,11 +84,11 @@ def get_manga_genre(manga_id) -> list:
 
         if response.status_code == 200:
             data = response.json().get("data")
-
-            for i,v in enumerate(data):
+            for i in range(len(data) - 1):
                 genre = data["attributes"]["tags"][i]["attributes"]["name"]["en"]
-                print("GENRE",genre)
+                #print("GENRE",genre)
                 genre_list.append(genre)
+
 
         else:
             print(response.status_code)
