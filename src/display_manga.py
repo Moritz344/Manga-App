@@ -15,14 +15,13 @@ is_Downloaded = False
 
 def main_window_frame(window,manga_title):
     def get_manga_with_name():
-
+        global first_call
         manga_title = search_field.get()
         print(manga_title)
         c.update_manga(manga_title)
 
     window.grid_rowconfigure(1, weight=1)
     window.grid_columnconfigure(0, weight=1)
-
 
 
     entry_frame = ctk.CTkFrame(window,width=2000,height=500,fg_color="transparent",)
@@ -54,6 +53,7 @@ def main_window_frame(window,manga_title):
     main_frame = ctk.CTkFrame(window,width=2000,height=2000,fg_color="transparent")
     main_frame.grid(row=1,column=0,padx=10,pady=0,sticky="nsew")
 
+
     popular_manga = get_popular_manga()   
     # TODO Popular manga anzeigen:
     c = DisplayMangaInfos(None,main_frame,search_field,search_btn,entry_frame)
@@ -81,11 +81,6 @@ class CollectMangaInfos(object):
                 for chapter_id,chapter_number in self.chapters:
                     result = get_server_data(chapter_id)
                     if result is None:
-                        CTkMessagebox(self.window,
-                        title="oops",
-                        message=f"Dowloading {self.manga_title} now. This might take a while",
-                        icon="info",
-                        justify="center")
                         return
                     pages,host,chapter_hash = result
 
@@ -313,6 +308,7 @@ class ChapterView:
         self.genres: list = None
 
 
+
         self.frame_1 = ctk.CTkFrame(window,width=800,height=1000,)
         self.frame_1.pack(side="left",expand=True,padx=0,pady=100,)
 
@@ -368,13 +364,15 @@ class ChapterView:
         self.description_text = ctk.CTkLabel(self.frame_1,text=f"Description",
         text_color=f"{button_hover_color}",font=(None,25))
         self.description_text.place(x=10,y=490,)
-
-        self.description_label = ctk.CTkLabel(self.frame_1,text=f"{self.description}",font=(None,20),
-        anchor="sw",justify="left",
-        wraplength=580)
-        self.description_label.place(x=10,y=530)
+        
 
         
+        self.desc_frame = ctk.CTkScrollableFrame(self.frame_1,width=500,height=200,)
+        self.desc_frame.place(x=10,y=530)
+        
+        self.description_label = ctk.CTkLabel(self.desc_frame,text=f"{self.description}",font=(None,20),
+        justify="left",wraplength=500)
+        self.description_label.pack(side="left",padx=0,pady=0)
         
         
         self.chapter_frame = ctk.CTkScrollableFrame(self.frame_0,width=750,height=1000,fg_color="transparent")
@@ -397,9 +395,21 @@ class ChapterView:
         self.back_button = ctk.CTkButton(self.frame_1,text="Back",font=(None,20),fg_color=f"{button_color}",
                                              hover_color=f"{button_hover_color}",command=self.back_btn)
         self.back_button.place(x=10,y=780)
+
         
+        self.manga_status_handler()
+        self.get_description_len()
         self.get_chapters()
         self.combobox_order(self.combobox_var.get())
+    
+    def manga_status_handler(self):
+        manga_id = get_manga_title(manga_title)
+        manga_status = get_manga_status(manga_id)
+
+    def get_description_len(self):
+        text = self.description_label.cget("text") 
+        desc_len = len(text)
+        print(desc_len)
 
     def delete_manga(self,show_message):
         try:
@@ -575,10 +585,14 @@ class DisplayMangaInfos:
         self.max_manga_num = 9
         self.manga_num = len(self.result)
 
+        #self.get_random_manga()
 
         loader = CTkLoader(master=window, opacity=0.8, width=40, height=40)
         window.after(500, loader.stop_loader) 
-
+    
+    def get_random_manga(self):
+        random_manga_list = get_random_manga()
+        print(random_manga_list)
 
     def show_popular_manga(self,popular_manga):
             self.display_mangas(popular_manga,len(popular_manga))
