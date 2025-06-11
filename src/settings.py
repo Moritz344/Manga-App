@@ -10,9 +10,10 @@ def get_data_from_json() -> str:
             color_blue = data["settings"]["color_blue"]
             block_color = data["settings"]["block_color"]
             color_green = data["settings"]["color_green"]
-            chapter_left = data["user_var"][f"{manga_name}"]
+            history = data["user_var"][f"{manga_name}"]
+            len_history = data["user_var"]
 
-            return button_color,button_hover_color,block_color,color_blue,color_green,chapter_left,manga_name
+            return button_color,button_hover_color,block_color,color_blue,color_green,history,manga_name,len_history
             
-button_color,button_hover_color,block_color,color_blue,color_green,chapter_left,manga_name = get_data_from_json()
+button_color,button_hover_color,block_color,color_blue,color_green,history,manga_name,len_history = get_data_from_json()
 
