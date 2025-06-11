@@ -15,7 +15,6 @@ is_Downloaded = False
 
 def main_window_frame(window,manga_title):
     def get_manga_with_name():
-        global first_call
         manga_title = search_field.get()
         print(manga_title)
         c.update_manga(manga_title)
@@ -56,8 +55,8 @@ def main_window_frame(window,manga_title):
 
     popular_manga = get_popular_manga()   
     # TODO Popular manga anzeigen:
-    c = DisplayMangaInfos(None,main_frame,search_field,search_btn,entry_frame)
-    c.show_popular_manga(popular_manga)
+    c = DisplayMangaInfos(None,main_frame,search_field,search_btn,entry_frame,popular_manga)
+    c.show_popular_manga()
 
     return manga_title
 
@@ -433,7 +432,7 @@ class ChapterView:
             self.display_chapter_list("start")
             
     def continue_manga(self):
-        chapter_start = chapter_left
+        chapter_start = history
         self.clear_all_ui_elements()
         ReadMangaScreen(self.manga_title,self.window,chapter_start)
 
@@ -542,19 +541,28 @@ class ChapterView:
         main_window_frame(self.window,"Naruto")
 
 class DisplayMangaInfos:
-    def __init__(self,manga_title,window,search_field,search_btn,entry_frame):
+    def __init__(self,manga_title,window,search_field,search_btn,entry_frame,popular_manga):
 
         self.manga_title = manga_title
         self.window = window
+        self.popular_manga = popular_manga
 
+        # ergebnis der mangas beim suchen
         self.result = search_manga_result(manga_title)
 
+        
+        self.frame_values = ["show popular manga","show random manga"]
+        self.scrollable_frame_list = ctk.CTkComboBox(self.window,
+        values=self.frame_values,width=200,height=50,
+        command=self.switch_manga_list)
+        self.scrollable_frame_list.pack(padx=0,pady=0,anchor="ne")
 
         self.grid_container = ctk.CTkFrame(self.window,width=1500,height=1100,fg_color="transparent")
         self.grid_container.pack(padx=10,pady=10)
+
         
         self.scrollable_frame = ctk.CTkScrollableFrame(master=self.grid_container, 
-        width=1500,height=900, fg_color="#272727")
+        width=1500,height=850, fg_color="#272727")
         self.scrollable_frame.grid(row=0,column=0)
 
 
@@ -564,46 +572,66 @@ class DisplayMangaInfos:
         
         # This is slow
         self.covers = []
-
-        #for manga in self.result:
-        #        manga_id,fileName = get_manga_cover(manga)
-        #        self.manga_list.append((manga_id))
-        #        self.manga_list.append((fileName))
-        #        image_cover = load_cover_image(manga_id,fileName)
-        #        self.covers.append(image_cover)
-
-        manga_id,fileName = get_manga_cover(manga_title)
-        image_cover = load_cover_image(manga_id,fileName,350,400)
         
-        self.image_cover = image_cover
+        self.update_image_cover(manga_title,None)
+        #manga_id,fileName = get_manga_cover(manga_title)
+        #image_cover = load_cover_image(manga_id,fileName,350,400)
+        #self.image_cover = image_cover
         print(self.covers)
 
         self.search_field = search_field
         self.search_btn = search_btn
         self.entry_frame = entry_frame
-        
-        self.max_manga_num = 9
+
+        #self.max_manga_num = 10
+        # maximum sollte standard in der api 10 sein
         self.manga_num = len(self.result)
 
-        #self.get_random_manga()
+
 
         loader = CTkLoader(master=window, opacity=0.8, width=40, height=40)
         window.after(500, loader.stop_loader) 
-    
-    def get_random_manga(self):
-        random_manga_list = get_random_manga()
-        print(random_manga_list)
 
-    def show_popular_manga(self,popular_manga):
-            self.display_mangas(popular_manga,len(popular_manga))
+
+    def switch_manga_list(self,choice):
+        if choice == "show popular manga":
+            self.show_popular_manga()
+        else:
+            random_manga_list = self.get_random_manga()
+            self.show_random_manga(random_manga_list)
+    
+    def get_random_manga(self) -> list:
+        random_manga_list = get_random_manga()
+        return random_manga_list
+
+    def show_popular_manga(self):
+        self.update_image_cover(self.popular_manga[0],None)
+        self.display_mangas(self.popular_manga,len(self.popular_manga))
+    def show_random_manga(self,random_manga):
+        self.update_image_cover(random_manga[0],None)
+        self.display_mangas(random_manga,len(random_manga))
+
+    def update_image_cover(self,manga,manga_list=None) :
+
+        manga_id, fileName = get_manga_cover(manga)
+        self.image_cover = load_cover_image(manga_id, fileName, 350, 400)
+        #self.covers.append(self.image_cover)
+        
+
+        #for manga in manga_list:
+        #        manga_id,fileName = get_manga_cover(manga)
+        #        self.manga_list.append((manga_id))
+        #        self.manga_list.append((fileName))
+        #        image_cover = load_cover_image(manga_id,fileName,350,400)
+        #        self.covers.append(image_cover)
     
     def update_manga(self, new_title):
         self.manga_title = new_title
         self.result = search_manga_result(new_title)
         self.manga_num = len(self.result)
         
-        manga_id, fileName = get_manga_cover(new_title)
-        self.image_cover = load_cover_image(manga_id, fileName, 350, 400)
+        self.update_image_cover(new_title,None)
+        print(self.covers)
         
         self.display_mangas(self.result,len(self.result))
 
@@ -645,12 +673,13 @@ class DisplayMangaInfos:
             justify="center")
 
     def open_manga(self,r):
-
         print("Downloading Manga now: ",manga_name)
         error = self.check_manga_exist(r)
         if not error :
             write_data_to_json("manga_data","manga_title",r)
             write_data_to_json("user_var",f"{r}",0)
+
+
             self.clear_all_ui_elements()
             ChapterView(r,self.window)
         else:
@@ -658,7 +687,6 @@ class DisplayMangaInfos:
 
     def display_mangas(self,result,length,):
         
-
 
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
@@ -687,11 +715,13 @@ class DisplayMangaInfos:
 
 
                 block_label.place(x=5,y=0)
-
-                block_image = ctk.CTkLabel(block,text=f"",image=self.image_cover,)
-                block_image.place(x=0,y=0)
-
-
+                
+                try:
+                    block_image = ctk.CTkLabel(block,text=f"",image=self.image_cover)
+                    block_image.place(x=0,y=0)
+                except Exception as e:
+                    print("block image:",e)
+                    self.covers = []
                 # description label
                 curr_manga = block_label.cget("text")
 
