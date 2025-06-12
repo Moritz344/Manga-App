@@ -6,7 +6,9 @@ import os
 from PIL import Image
 from display_manga import DisplayMangaInfos,ReadMangaScreen,main_window_frame
 from ctk_components import CTkLoader
+from settings import *
 
+#TODO: chapterview -> scrollableframe -> scrollable für linux machen
 #TODO: mark mangas as downloaded
 #TODO: manga status
 #TODO: json datei benutzen für settings
@@ -20,9 +22,10 @@ from ctk_components import CTkLoader
 window = ctk.CTk()
 window.geometry("800x600")
 ctk.set_appearance_mode("dark")
-manga_title = None
+window.configure(fg_color=f"{graphite}")
 
-manag_title = main_window_frame(window,manga_title)
+
+main_window_frame(window,manga_title)
 #loader = CTkLoader(master=window, opacity=0.8, width=40, height=40)
 #window.after(500, loader.stop_loader) 
 

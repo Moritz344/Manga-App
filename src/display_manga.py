@@ -29,7 +29,7 @@ def main_window_frame(window,manga_title):
     
 
 
-    settings_frame = ctk.CTkFrame(window,width=1800,height=50,fg_color="transparent")
+    settings_frame = ctk.CTkFrame(window,width=1800,height=50,fg_color=f"{button_color}")
 
     entry_frame = ctk.CTkFrame(window,width=2000,height=500,fg_color="transparent")
 
@@ -92,9 +92,9 @@ def main_window_frame(window,manga_title):
     entry_frame.grid(row=1,column=0,pady=10,)
     main_frame.grid(row=2,column=0,padx=10,pady=0,sticky="nsew")
 
-    settings_btn.place(x=185,y=0,)
-    history_btn.place(x=400,y=0,)
-    github_btn.place(x=615,y=0,)
+    settings_btn.pack(side="left",padx=10,pady=5)
+    history_btn.pack(side="left",padx=10,pady=5)
+    github_btn.pack(side="right",padx=10,pady=5)
 
     every_frame = [search_field,search_btn,entry_frame,settings_frame,settings_btn,history_btn]
 
@@ -104,7 +104,10 @@ def main_window_frame(window,manga_title):
     c.show_popular_manga()
 
     def on_enter(event):
-        get_manga_with_name()
+        window.focus()
+        manga_title = search_field.get()
+        print(manga_title)
+        c.update_manga(manga_title)
 
     window.bind("<Return>",on_enter)
 
@@ -613,19 +616,22 @@ class DisplayMangaInfos:
         self.result = search_manga_result(manga_title)
 
         
-        self.frame_values = ["show popular manga","show random manga"]
-        self.scrollable_frame_list = ctk.CTkComboBox(self.window,
-        values=self.frame_values,width=160,height=50,
-        command=self.switch_manga_list)
-        #self.scrollable_frame_list.place(x=1730,y=0)
 
-
-        self.grid_container = ctk.CTkFrame(self.window,width=1500,height=1100,fg_color="transparent")
+        self.grid_container = ctk.CTkFrame(self.window,width=1500,fg_color="transparent")
         self.grid_container.pack(padx=10,pady=10)
 
+        self.frame_values = ["show popular manga","show random manga"]
+        self.scrollable_frame_list = ctk.CTkComboBox(self.grid_container,
+        values=self.frame_values,width=160,height=50,
+        command=self.switch_manga_list)
+        self.scrollable_frame_list.grid(sticky="w",row=0,column=0,pady=10)
+
         self.scrollable_frame = ctk.CTkScrollableFrame(master=self.grid_container, 
-        width=1500,height=840, fg_color="#272727")
-        self.scrollable_frame.grid(row=2,column=0,sticky="nsew",pady=20)
+        width=1500,height=840, fg_color=f"{dark_charcoal}",
+        label_text=f"Here are some popular mangas!",
+        scrollbar_button_color=f"{button_color}",
+        scrollbar_button_hover_color=f"{button_hover_color}")
+        self.scrollable_frame.grid(row=1,column=0,sticky="nsew",pady=0,padx=0)
 
         self.grid_container.grid_rowconfigure(1, weight=1)
         self.grid_container.grid_columnconfigure(0, weight=1)
@@ -667,6 +673,7 @@ class DisplayMangaInfos:
         if choice == "show popular manga":
             self.show_popular_manga()
         else:
+            self.scrollable_frame.configure(label_text="Here are some random mangas!")
             random_manga_list = self.get_random_manga()
             self.show_random_manga(random_manga_list)
     
@@ -684,7 +691,7 @@ class DisplayMangaInfos:
     def update_image_cover(self,manga,manga_list=None) :
 
         manga_id, fileName = get_manga_cover(manga)
-        self.image_cover = load_cover_image(manga_id, fileName, 350, 400)
+        self.image_cover = load_cover_image(manga_id, fileName, 300, 350)
         #self.covers.append(self.image_cover)
         
 
@@ -699,6 +706,9 @@ class DisplayMangaInfos:
         self.manga_title = new_title
         self.result = search_manga_result(new_title)
         self.manga_num = len(self.result)
+        
+        if len(new_title) <= 30:
+            self.scrollable_frame.configure(label_text=f"Here is everything I could find for '{new_title}'")
         
         self.update_image_cover(new_title,None)
         print(self.covers)
@@ -774,10 +784,12 @@ class DisplayMangaInfos:
                 row = i // 3
                 col = i % 3
 
-                block = ctk.CTkFrame(self.scrollable_frame,width=350,height=350,fg_color="transparent",corner_radius=0)
+                block = ctk.CTkFrame(self.scrollable_frame,
+                width=350,height=350,fg_color="transparent",corner_radius=0)
                 block.grid(row=row,column=col ,padx=75,pady=50)
 
-                text_block = ctk.CTkFrame(self.scrollable_frame,width=400,height=100,fg_color="transparent",corner_radius=0)
+                text_block = ctk.CTkFrame(self.scrollable_frame,width=400,height=100,
+                fg_color="transparent",corner_radius=0)
                 text_block.grid(row=row,column=col,padx=28,pady=0,sticky="se")
 
 
