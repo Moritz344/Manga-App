@@ -15,34 +15,71 @@ is_Downloaded = False
 
 def main_window_frame(window,manga_title):
     def get_manga_with_name():
+        window.focus()
         manga_title = search_field.get()
         print(manga_title)
         c.update_manga(manga_title)
 
-    window.grid_rowconfigure(1, weight=1)
+    
+    window.grid_rowconfigure(0, weight=0)  # settings_frame
+    window.grid_rowconfigure(1, weight=0)  # entry_frame
+    window.grid_rowconfigure(2, weight=1)  # main_frame fills remaining space
     window.grid_columnconfigure(0, weight=1)
 
+    
 
-    entry_frame = ctk.CTkFrame(window,width=2000,height=500,fg_color="transparent",)
-    entry_frame.grid(row=0,column=0,padx=0,pady=0,sticky="n")
 
-    entry_frame.grid_columnconfigure(0, weight=1)
-    entry_frame.grid_columnconfigure(1, weight=0)
+    settings_frame = ctk.CTkFrame(window,width=1800,height=50,fg_color="transparent")
+
+    entry_frame = ctk.CTkFrame(window,width=2000,height=500,fg_color="transparent")
+
+    settings_btn = ctk.CTkButton(
+    settings_frame,
+    text="Settings",
+    fg_color="transparent",
+    text_color="white",
+    hover_color=f"{button_hover_color}",
+    font=(None,30))
+
+    github_btn = ctk.CTkButton(
+    settings_frame,
+    text="Github",
+    text_color="white",
+    fg_color="transparent",
+    hover_color=f"{button_hover_color}",
+    font=(None,30))
+
+    history_btn = ctk.CTkButton(
+    settings_frame,
+    text="History",
+    text_color="white",
+    fg_color="transparent",
+    hover_color=f"{button_hover_color}",
+    font=(None,30))
+
+    kofgio= ctk.CTkButton(
+    settings_frame,
+    text="History",
+    text_color="white",
+    fg_color="transparent",
+    hover_color=f"{button_hover_color}",
+    font=(None,30))
 
     search_field = ctk.CTkEntry(entry_frame,
     width=1300,
     height=70,
     font=(None,30),
     placeholder_text="Search Manga ...",
-    placeholder_text_color="#B3B3B3")
-    search_field.grid(row=0,column=1,padx=10,pady=10,sticky="ew")
+    placeholder_text_color="#B3B3B3",
+    corner_radius=10)
+    search_field.grid(row=0,column=1,padx=10,pady=0,sticky="ew")
+    
+    search_image = ctk.CTkImage(Image.open("assets/icons/search.png"),size=(50,50))
 
-
-    search_btn = ctk.CTkButton(entry_frame,text="Search",height=70,font=(None,30),fg_color=f"{button_color}",
+    search_btn = ctk.CTkButton(entry_frame,text="",height=70,font=(None,30),fg_color=f"{button_color}",
     command=lambda :get_manga_with_name(),hover_color=f"{button_hover_color}",
-    )
-    search_btn.grid(row=0,column=0,padx=0,pady=10,)
-
+    image=search_image)
+    search_btn.grid(row=0,column=0,padx=0,pady=0,)
 
 
 
@@ -50,13 +87,26 @@ def main_window_frame(window,manga_title):
 
 
     main_frame = ctk.CTkFrame(window,width=2000,height=2000,fg_color="transparent")
-    main_frame.grid(row=1,column=0,padx=10,pady=0,sticky="nsew")
 
+    settings_frame.grid(row=0,column=0,pady=10,)
+    entry_frame.grid(row=1,column=0,pady=10,)
+    main_frame.grid(row=2,column=0,padx=10,pady=0,sticky="nsew")
+
+    settings_btn.place(x=185,y=0,)
+    history_btn.place(x=400,y=0,)
+    github_btn.place(x=615,y=0,)
+
+    every_frame = [search_field,search_btn,entry_frame,settings_frame,settings_btn,history_btn]
 
     popular_manga = get_popular_manga()   
     # TODO Popular manga anzeigen:
-    c = DisplayMangaInfos(None,main_frame,search_field,search_btn,entry_frame,popular_manga)
+    c = DisplayMangaInfos(None,main_frame,every_frame,popular_manga)
     c.show_popular_manga()
+
+    def on_enter(event):
+        get_manga_with_name()
+
+    window.bind("<Return>",on_enter)
 
     return manga_title
 
@@ -305,6 +355,7 @@ class ChapterView:
         self.all_chapters = None
         self.description = None
         self.genres: list = None
+        self.manga_status: str = None
 
 
 
@@ -397,6 +448,14 @@ class ChapterView:
 
         
         self.manga_status_handler()
+        
+        self.manga_status_text_label = ctk.CTkLabel(self.info_frame,text="Manga Status",font=(None,20)
+        ,text_color=f"{button_hover_color}")
+        self.manga_status_text_label.pack(anchor="w",padx=0,pady=0)
+
+        self.manga_status_label = ctk.CTkLabel(self.info_frame,text=f"{self.manga_status}",font=(None,20))
+        self.manga_status_label.pack(anchor="w",padx=0,pady=0)
+
         self.get_description_len()
         self.get_chapters()
         self.combobox_order(self.combobox_var.get())
@@ -404,6 +463,8 @@ class ChapterView:
     def manga_status_handler(self):
         manga_id = get_manga_title(manga_title)
         manga_status = get_manga_status(manga_id)
+        self.manga_status = manga_status
+
 
     def get_description_len(self):
         text = self.description_label.cget("text") 
@@ -541,11 +602,12 @@ class ChapterView:
         main_window_frame(self.window,"Naruto")
 
 class DisplayMangaInfos:
-    def __init__(self,manga_title,window,search_field,search_btn,entry_frame,popular_manga):
+    def __init__(self,manga_title,window,main_frames,popular_manga):
 
         self.manga_title = manga_title
         self.window = window
         self.popular_manga = popular_manga
+        self.main_frames = main_frames
 
         # ergebnis der mangas beim suchen
         self.result = search_manga_result(manga_title)
@@ -553,17 +615,20 @@ class DisplayMangaInfos:
         
         self.frame_values = ["show popular manga","show random manga"]
         self.scrollable_frame_list = ctk.CTkComboBox(self.window,
-        values=self.frame_values,width=200,height=50,
+        values=self.frame_values,width=160,height=50,
         command=self.switch_manga_list)
-        self.scrollable_frame_list.pack(padx=0,pady=0,anchor="ne")
+        #self.scrollable_frame_list.place(x=1730,y=0)
+
 
         self.grid_container = ctk.CTkFrame(self.window,width=1500,height=1100,fg_color="transparent")
         self.grid_container.pack(padx=10,pady=10)
 
-        
         self.scrollable_frame = ctk.CTkScrollableFrame(master=self.grid_container, 
-        width=1500,height=850, fg_color="#272727")
-        self.scrollable_frame.grid(row=0,column=0)
+        width=1500,height=840, fg_color="#272727")
+        self.scrollable_frame.grid(row=2,column=0,sticky="nsew",pady=20)
+
+        self.grid_container.grid_rowconfigure(1, weight=1)
+        self.grid_container.grid_columnconfigure(0, weight=1)
 
 
         self.progressbar = ctk.CTkProgressBar(self.window, orientation="horizontal")
@@ -573,15 +638,11 @@ class DisplayMangaInfos:
         # This is slow
         self.covers = []
         
-        self.update_image_cover(manga_title,None)
+        #self.update_image_cover(manga_title,None)
         #manga_id,fileName = get_manga_cover(manga_title)
         #image_cover = load_cover_image(manga_id,fileName,350,400)
         #self.image_cover = image_cover
         print(self.covers)
-
-        self.search_field = search_field
-        self.search_btn = search_btn
-        self.entry_frame = entry_frame
 
         #self.max_manga_num = 10
         # maximum sollte standard in der api 10 sein
@@ -591,6 +652,15 @@ class DisplayMangaInfos:
 
         loader = CTkLoader(master=window, opacity=0.8, width=40, height=40)
         window.after(500, loader.stop_loader) 
+
+        # Für Linux 
+        try:
+            self.scrollable_frame.bind_all("<Button-4>",
+            lambda e: self.scrollable_frame._parent_canvas.yview("scroll", -1, "units"))
+            self.scrollable_frame.bind_all("<Button-5>",
+            lambda e: self.scrollable_frame._parent_canvas.yview("scroll", 1, "units"))
+        except Exception as e:
+            print(e)
 
 
     def switch_manga_list(self,choice):
@@ -649,11 +719,17 @@ class DisplayMangaInfos:
 
     def clear_all_ui_elements(self):
         #self.scrollable_frame.grid_forget()
-            for widget in self.window.winfo_children():
+            
+            for widget_0 in self.window.winfo_children():
+                widget_0.destroy()
+
+            for widget in self.main_frames:
                 widget.destroy()
-            self.search_field.destroy()
-            self.search_btn.destroy()
-            self.entry_frame.destroy()
+            
+
+            #self.search_field.destroy()
+            #self.search_btn.destroy()
+            #self.entry_frame.destroy()
 
     def message_box_func(self,error):
         if error:

@@ -7,7 +7,7 @@ from PIL import Image
 from display_manga import DisplayMangaInfos,ReadMangaScreen,main_window_frame
 from ctk_components import CTkLoader
 
-#TODO: make a combobox with option: show popular mangas,random mangas
+#TODO: mark mangas as downloaded
 #TODO: manga status
 #TODO: json datei benutzen für settings
 #TODO: mangas speichern in sql lite
