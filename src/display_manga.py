@@ -3,12 +3,12 @@ from handling_requests import *
 from PIL import Image
 import tkinter.font as tkFont
 from settings import *
-from ctk_components import CTkLoader
 from write_to_json import write_data_to_json
 from CTkMessagebox import CTkMessagebox
 import tkinter as tk
 import random
 import shutil
+from CTkToolTip import *
 
 is_Downloaded = False
 
@@ -20,6 +20,9 @@ def main_window_frame(window,manga_title):
         print(manga_title)
         c.update_manga(manga_title)
 
+    def open_settings():
+        s = Settings(window)
+
     
     window.grid_rowconfigure(0, weight=0)  # settings_frame
     window.grid_rowconfigure(1, weight=0)  # entry_frame
@@ -27,23 +30,29 @@ def main_window_frame(window,manga_title):
     window.grid_columnconfigure(0, weight=1)
 
     
+    settings_icon = ctk.CTkImage(Image.open("assets/icons/settings.png"),size=(50,50))
+    history_icon = ctk.CTkImage(Image.open("assets/icons/history.png"),size=(50,50))
+    github_icon = ctk.CTkImage(Image.open("assets/icons/github.png"),size=(50,50))
 
 
-    settings_frame = ctk.CTkFrame(window,width=1800,height=50,fg_color=f"{button_color}")
+    settings_frame = ctk.CTkFrame(window,width=1800,height=50,fg_color=f"{graphite}")
 
-    entry_frame = ctk.CTkFrame(window,width=2000,height=500,fg_color="transparent")
+    entry_frame = ctk.CTkFrame(window,height=500,fg_color="transparent")
 
     settings_btn = ctk.CTkButton(
     settings_frame,
     text="Settings",
+    image=settings_icon,
     fg_color="transparent",
     text_color="white",
+    command=open_settings,
     hover_color=f"{button_hover_color}",
     font=(None,30))
 
     github_btn = ctk.CTkButton(
     settings_frame,
     text="Github",
+    image=github_icon,
     text_color="white",
     fg_color="transparent",
     hover_color=f"{button_hover_color}",
@@ -52,6 +61,7 @@ def main_window_frame(window,manga_title):
     history_btn = ctk.CTkButton(
     settings_frame,
     text="History",
+    image=history_icon,
     text_color="white",
     fg_color="transparent",
     hover_color=f"{button_hover_color}",
@@ -76,13 +86,16 @@ def main_window_frame(window,manga_title):
     
     search_image = ctk.CTkImage(Image.open("assets/icons/search.png"),size=(50,50))
 
-    search_btn = ctk.CTkButton(entry_frame,text="",height=70,font=(None,30),fg_color=f"{button_color}",
-    command=lambda :get_manga_with_name(),hover_color=f"{button_hover_color}",
+    search_btn = ctk.CTkButton(entry_frame,
+    text="",
+    width=10,
+    height=70,
+    font=(None,30),
+    fg_color=f"{button_color}",
+    command=lambda :get_manga_with_name(),
+    hover_color=f"{button_hover_color}",
     image=search_image)
     search_btn.grid(row=0,column=0,padx=0,pady=0,)
-
-
-
 
 
 
@@ -95,6 +108,10 @@ def main_window_frame(window,manga_title):
     settings_btn.pack(side="left",padx=10,pady=5)
     history_btn.pack(side="left",padx=10,pady=5)
     github_btn.pack(side="right",padx=10,pady=5)
+
+    tooltip_1 = CTkToolTip(settings_btn,message="View the settings tab")
+    tooltip_2 = CTkToolTip(history_btn,message="View your history ")
+    tooltip_3 = CTkToolTip(github_btn,message="My Github")
 
     every_frame = [search_field,search_btn,entry_frame,settings_frame,settings_btn,history_btn]
 
@@ -110,6 +127,7 @@ def main_window_frame(window,manga_title):
         c.update_manga(manga_title)
 
     window.bind("<Return>",on_enter)
+
 
     return manga_title
 
@@ -459,6 +477,14 @@ class ChapterView:
         self.manga_status_label = ctk.CTkLabel(self.info_frame,text=f"{self.manga_status}",font=(None,20))
         self.manga_status_label.pack(anchor="w",padx=0,pady=0)
 
+        try:
+            self.chapter_frame.bind_all("<Button-4>",
+            lambda e: self.chapter_frame._parent_canvas.yview("scroll", -1, "units"))
+            self.chapter_frame.bind_all("<Button-5>",
+            lambda e: self.chapter_frame._parent_canvas.yview("scroll", 1, "units"))
+        except Exception as e:
+            print(e)
+
         self.get_description_len()
         self.get_chapters()
         self.combobox_order(self.combobox_var.get())
@@ -620,18 +646,36 @@ class DisplayMangaInfos:
         self.grid_container = ctk.CTkFrame(self.window,width=1500,fg_color="transparent")
         self.grid_container.pack(padx=10,pady=10)
 
-        self.frame_values = ["show popular manga","show random manga"]
-        self.scrollable_frame_list = ctk.CTkComboBox(self.grid_container,
-        values=self.frame_values,width=160,height=50,
-        command=self.switch_manga_list)
-        self.scrollable_frame_list.grid(sticky="w",row=0,column=0,pady=10)
+        self.checkbox_random_var = ctk.StringVar(value="off")
+        self.checkbox_random = ctk.CTkCheckBox(self.grid_container,
+        text="Random",
+        variable=self.checkbox_random_var,
+        onvalue="on",
+        offvalue="off",
+        corner_radius=50,
+        font=(None,20),
+        command = self.switch_to_random,
+        hover_color=f"{button_hover_color}")
+        self.checkbox_random.grid(sticky="w",row=0,column=0,pady=10,padx=80)
+
+        self.checkbox_popular_var = ctk.StringVar(value="off")
+        self.checkbox_popular = ctk.CTkCheckBox(self.grid_container,
+        text="Popular",
+        onvalue="on",
+        offvalue="off",
+        variable=self.checkbox_popular_var,
+        corner_radius=50,
+        font=(None,20),
+        command = self.switch_to_popular,
+        hover_color=f"{button_hover_color}")
+
+        self.checkbox_popular.grid(sticky="w",row=0,column=0,pady=10,padx=240)
 
         self.scrollable_frame = ctk.CTkScrollableFrame(master=self.grid_container, 
-        width=1500,height=840, fg_color=f"{dark_charcoal}",
-        label_text=f"Here are some popular mangas!",
-        scrollbar_button_color=f"{button_color}",
-        scrollbar_button_hover_color=f"{button_hover_color}")
+        width=1500,height=800,fg_color=f"{dark_charcoal}",
+        scrollbar_button_color=f"{button_color}",scrollbar_button_hover_color=f"{button_hover_color}")
         self.scrollable_frame.grid(row=1,column=0,sticky="nsew",pady=0,padx=0)
+
 
         self.grid_container.grid_rowconfigure(1, weight=1)
         self.grid_container.grid_columnconfigure(0, weight=1)
@@ -656,8 +700,6 @@ class DisplayMangaInfos:
 
 
 
-        loader = CTkLoader(master=window, opacity=0.8, width=40, height=40)
-        window.after(500, loader.stop_loader) 
 
         # Für Linux 
         try:
@@ -668,14 +710,23 @@ class DisplayMangaInfos:
         except Exception as e:
             print(e)
 
-
-    def switch_manga_list(self,choice):
-        if choice == "show popular manga":
-            self.show_popular_manga()
+    
+    def switch_to_random(self):
+        if self.checkbox_random_var.get() == "on" :
+            if self.checkbox_popular.get() == "off":
+                random_manga_list = self.get_random_manga()
+                self.show_random_manga(random_manga_list)
+                self.checkbox_popular.configure(state=tk.DISABLED)
         else:
-            self.scrollable_frame.configure(label_text="Here are some random mangas!")
-            random_manga_list = self.get_random_manga()
-            self.show_random_manga(random_manga_list)
+             self.checkbox_popular.configure(state=tk.NORMAL)
+
+    def switch_to_popular(self):
+        if self.checkbox_popular_var.get() == "on":
+            if self.checkbox_random.get() == "off":
+                self.show_popular_manga()
+                self.checkbox_random.configure(state=tk.DISABLED)
+        else:
+             self.checkbox_random.configure(state=tk.NORMAL)
     
     def get_random_manga(self) -> list:
         random_manga_list = get_random_manga()
@@ -691,7 +742,7 @@ class DisplayMangaInfos:
     def update_image_cover(self,manga,manga_list=None) :
 
         manga_id, fileName = get_manga_cover(manga)
-        self.image_cover = load_cover_image(manga_id, fileName, 300, 350)
+        self.image_cover = load_cover_image(manga_id, fileName, 300, 300)
         #self.covers.append(self.image_cover)
         
 
@@ -707,8 +758,6 @@ class DisplayMangaInfos:
         self.result = search_manga_result(new_title)
         self.manga_num = len(self.result)
         
-        if len(new_title) <= 30:
-            self.scrollable_frame.configure(label_text=f"Here is everything I could find for '{new_title}'")
         
         self.update_image_cover(new_title,None)
         print(self.covers)
@@ -820,6 +869,40 @@ class DisplayMangaInfos:
 
 
 
+
+
+class Settings:
+    def __init__(self,window):
+        # textgröße
+        # app theme / eigenes theme erstellen
+        # speicherort festlegen downloads
+        # Kapitelanzahl begrenzen
+        # History löschen
+        # Heruntergeladene Mangas löschen
+
+        self.window = window
+        self.clear_ui_elements()
+
+        self.home_btn = ctk.CTkButton(
+        self.window,
+        text="Home",
+        fg_color=f"{button_color}",
+        hover_color=f"{button_hover_color}",
+        command=self.home_screen,
+        font=(None,20))
+
+        self.main_frame = ctk.CTkFrame(self.window,width=1500,height=900)
+        self.main_frame.grid(row=0,column=0,padx=0,pady=10)
+        self.home_btn.grid(row=2,column=0,padx=210,pady=0,sticky="w")
+
+
+
+    def clear_ui_elements(self) -> None:
+        for widget in self.window.winfo_children():
+            widget.destroy()
+    def home_screen(self) -> None:
+        self.clear_ui_elements()
+        main_window_frame(self.window,f"{manga_name}")
 
 
 
