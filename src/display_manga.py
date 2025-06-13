@@ -460,12 +460,12 @@ class ChapterView:
 
         self.delete_btn = ctk.CTkButton(self.frame_1,text="Delete Manga",
         font=(None,20),fg_color="#e05033",hover_color=f"#a5250b",command=lambda: self.delete_manga(True))
-        self.delete_btn.place(x=200,y=780)
+        self.delete_btn.place(x=200,y=750)
 
        
         self.back_button = ctk.CTkButton(self.frame_1,text="Back",font=(None,20),fg_color=f"{button_color}",
                                              hover_color=f"{button_hover_color}",command=self.back_btn)
-        self.back_button.place(x=10,y=780)
+        self.back_button.place(x=10,y=750)
 
         
         self.manga_status_handler()
