@@ -11,19 +11,19 @@
         "button_color": "#44414B",
         "button_hover_color": "#5C5963",
         "button_text_color": "#F6F5F4",
-        "block_color": "#2B2B2B",
+        "block_color": "#1E1E2E",
         "color_green": "#136C26",
         "color_blue": "#1C2589",
         "dark charcoal": "#121212",
         "neon pink": "#FF3CAC",
         "electric Blue": "#00B2FF",
         "light gray": "#E0E0E0",
-        "graphite": "#1E1E1E"
+        "background": "#121212"
     },
     "user_var": {
         "Naruto (Official Colored)": 0,
         "Naruto": 0,
-        "Solo Leveling": 13,
+        "Solo Leveling": 5,
         "My Dress-Up Darling": 3,
         "Pokemon X THE iDOLM@STER (Doujinshi)": 0,
         "Sousou no Frieren": 0
