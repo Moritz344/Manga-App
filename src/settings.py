@@ -15,10 +15,10 @@ def get_data_from_json() -> str:
 
             dark_charcoal = data["settings"]["dark charcoal"]
             electric_blue = data["settings"]["electric Blue"]
-            graphite = data["settings"]["graphite"]
+            background = data["settings"]["background"]
 
 
-            return button_color,button_hover_color,block_color,color_blue,color_green,history,manga_name,len_history,dark_charcoal,electric_blue,graphite
+            return button_color,button_hover_color,block_color,color_blue,color_green,history,manga_name,len_history,dark_charcoal,electric_blue,background
             
-button_color,button_hover_color,block_color,color_blue,color_green,history,manga_name,len_history,dark_charcoal,electric_blue,graphite = get_data_from_json()
+button_color,button_hover_color,block_color,color_blue,color_green,history,manga_name,len_history,dark_charcoal,electric_blue,background = get_data_from_json()
 

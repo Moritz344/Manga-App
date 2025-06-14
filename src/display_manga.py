@@ -9,6 +9,7 @@ import tkinter as tk
 import random
 import shutil
 from CTkToolTip import *
+from CTkCodeBox import *
 
 is_Downloaded = False
 
@@ -35,7 +36,7 @@ def main_window_frame(window,manga_title):
     github_icon = ctk.CTkImage(Image.open("assets/icons/github.png"),size=(50,50))
 
 
-    settings_frame = ctk.CTkFrame(window,width=1800,height=50,fg_color=f"{graphite}")
+    settings_frame = ctk.CTkFrame(window,width=1800,height=50,fg_color=f"{background}")
 
     entry_frame = ctk.CTkFrame(window,height=500,fg_color="transparent")
 
@@ -120,13 +121,6 @@ def main_window_frame(window,manga_title):
     c = DisplayMangaInfos(None,main_frame,every_frame,popular_manga)
     c.show_popular_manga()
 
-    def on_enter(event):
-        window.focus()
-        manga_title = search_field.get()
-        print(manga_title)
-        c.update_manga(manga_title)
-
-    window.bind("<Return>",on_enter)
 
 
     return manga_title
@@ -380,7 +374,7 @@ class ChapterView:
 
 
 
-        self.frame_1 = ctk.CTkFrame(window,width=800,height=1000,)
+        self.frame_1 = ctk.CTkFrame(window,width=800,height=1000,fg_color="#242423",corner_radius=10)
         self.frame_1.pack(side="left",expand=True,padx=0,pady=100,)
 
         self.cover_frame = ctk.CTkFrame(self.frame_1,width=600,height=400,fg_color="transparent")
@@ -412,7 +406,7 @@ class ChapterView:
         text_color=f"{button_hover_color}")
         self.chapter_text.pack(anchor="w",padx=0,pady=0,)
 
-        self.chapter_label= ctk.CTkLabel(self.info_frame,text=f"{self.all_chapters}",font=(None,30,"bold"))
+        self.chapter_label= ctk.CTkLabel(self.info_frame,text=f"{self.all_chapters }",font=(None,30,"bold"))
         self.chapter_label.pack(anchor="w",padx=0,pady=0,)
         
         self.genre_text = ctk.CTkLabel(self.info_frame,text=f"Genres",
@@ -428,7 +422,7 @@ class ChapterView:
 
         if self.frame_1.winfo_exists():
             self.start_over = ctk.CTkButton(self.frame_1,text="Read From Start",fg_color=f"{color_green}",
-            font=(None,30,),width=270,command=lambda: self.start_over_func(0))
+            font=(None,30,),width=270,hover_color="#235730",command=lambda: self.start_over_func(0))
 
         self.start_over.place(x=10,y=400,)
 
@@ -460,12 +454,12 @@ class ChapterView:
 
         self.delete_btn = ctk.CTkButton(self.frame_1,text="Delete Manga",
         font=(None,20),fg_color="#e05033",hover_color=f"#a5250b",command=lambda: self.delete_manga(True))
-        self.delete_btn.place(x=200,y=750)
+        self.delete_btn.place(x=200,y=770)
 
        
         self.back_button = ctk.CTkButton(self.frame_1,text="Back",font=(None,20),fg_color=f"{button_color}",
                                              hover_color=f"{button_hover_color}",command=self.back_btn)
-        self.back_button.place(x=10,y=750)
+        self.back_button.place(x=10,y=770)
 
         
         self.manga_status_handler()
@@ -543,7 +537,7 @@ class ChapterView:
         try:
             manga_id = get_manga_title(self.manga_title)
             chapter_number= get_only_chapters(manga_id)
-            self.all_chapters = chapter_number
+            self.all_chapters = chapter_number 
 
             # get the description of the manga 
             description = get_manga_description(manga_id)
@@ -585,9 +579,10 @@ class ChapterView:
                 text=f"{i}  ",
                 width=500,
                 height=100,
-                corner_radius=0,
+                corner_radius=10,
                 anchor="ne",
-                font=(None,30,"bold"),fg_color=f"{block_color}",hover_color=f"{button_hover_color}",
+                font=(None,30,"bold"),fg_color=f"#242423",
+                hover_color="#454150",
                 command= lambda m=self.curr_block: self.read_manga(m))
 
                 block.pack(padx=0,pady=5,anchor="w")
@@ -891,9 +886,102 @@ class Settings:
         command=self.home_screen,
         font=(None,20))
 
+        self.side_frame = ctk.CTkFrame(self.window,height=900,)
+        self.side_frame.grid(row=0,column=0,sticky="nsew",padx=(20,10),pady=20)
+        
+
         self.main_frame = ctk.CTkFrame(self.window,width=1500,height=900)
-        self.main_frame.grid(row=0,column=0,padx=0,pady=10)
-        self.home_btn.grid(row=2,column=0,padx=210,pady=0,sticky="w")
+        self.main_frame.grid(row=0,column=1,sticky="nsew",padx=(20,10),pady=20)
+        
+        self.settings_btn_1 = ctk.CTkButton(self.side_frame,
+        text="All",
+        font=(None,20),
+        compound="left",
+        fg_color="transparent",
+        hover_color=f"{button_hover_color}"
+
+        )
+        self.settings_btn_2 = ctk.CTkButton(self.side_frame,
+        text="Display",
+        font=(None,20),
+        compound="left",
+        fg_color="transparent",
+        hover_color=f"{button_hover_color}"
+
+        )
+
+        self.settings_btn_1.pack(anchor="center",padx=0,pady=20)
+        self.settings_btn_2.pack(anchor="center",padx=0,pady=20)
+        
+        self.setting_frame_1 = ctk.CTkFrame(self.main_frame,fg_color="transparent",width=1500)
+        self.setting_frame_2 = ctk.CTkFrame(self.main_frame,fg_color="transparent",width=1500)
+        self.setting_frame_3 = ctk.CTkFrame(self.main_frame,fg_color="transparent",width=1500)
+        self.setting_frame_4 = ctk.CTkFrame(self.main_frame,fg_color="transparent",width=1500)
+
+        f_1 = ctk.CTkLabel(self.setting_frame_1,text="Font Size",font=(None,30),width=100)
+        f_2 = ctk.CTkLabel(self.setting_frame_1,text="Change the font size.",width=100,font=(None,15))
+
+        f_1.place(x=10,y=10)
+        f_2.place(x=10,y=60)
+
+        f_3 = ctk.CTkLabel(self.setting_frame_2,text="Chapter Download",font=(None,30),width=100)
+        f_4 = ctk.CTkLabel(self.setting_frame_2,text="Download this many chapters for a manga",width=100,font=(None,15))
+
+        f_3.place(x=10,y=110)
+        f_4.place(x=10,y=160)
+
+        f_5 = ctk.CTkLabel(self.setting_frame_3,text="Reset History",font=(None,30),width=100)
+        f_6 = ctk.CTkLabel(self.setting_frame_3,text="Delete every manga in the history tab",width=100,font=(None,15))
+
+        f_5.place(x=10,y=110)
+        f_6.place(x=10,y=160)
+
+        self.setting_frame_1.pack()
+        self.setting_frame_2.pack()
+        self.setting_frame_3.pack()
+        self.setting_frame_4.pack()
+
+
+        self.customize = CTkCodeBox(self.main_frame,
+        language="json",
+        width=1300,
+        height=800,
+        font=(None,20),
+        wrap=True,
+        line_numbering=False)
+
+        #self.customize.grid(row=0,column=0,padx=0,pady=10)
+
+        self.home_btn.grid(row=2,column=0,padx=30,pady=0,sticky="w")
+
+        #self.insert_json()
+                  
+    def insert_json(self):
+        code = """
+            },
+            "settings": {
+                "button_color": "#44414B",
+                "button_hover_color": "#5C5963",
+                "button_text_color": "#F6F5F4",
+                "block_color": "#1E1E2E",
+                "color_green": "#136C26",
+                "color_blue": "#1C2589",
+                "dark charcoal": "#121212",
+                "neon pink": "#FF3CAC",
+                "electric Blue": "#00B2FF",
+                "light gray": "#E0E0E0",
+                "background": "#121212"
+            },
+
+        """
+
+        self.customize.insert(tk.END,code)
+
+    def reset_grid_config(self):
+        def reset_grid_config(self):
+            self.window.grid_columnconfigure(0, weight=0)  # Seitenleiste
+            self.window.grid_columnconfigure(1, weight=1)  # Hauptbereich
+            self.window.grid_rowconfigure(0, weight=1)     # Zeile für Frames
 
 
 
@@ -901,6 +989,7 @@ class Settings:
         for widget in self.window.winfo_children():
             widget.destroy()
     def home_screen(self) -> None:
+        self.reset_grid_config()
         self.clear_ui_elements()
         main_window_frame(self.window,f"{manga_name}")
 

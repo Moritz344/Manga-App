@@ -18,7 +18,7 @@ from settings import *
 window = ctk.CTk()
 window.geometry("800x600")
 ctk.set_appearance_mode("dark")
-window.configure(fg_color=f"{graphite}")
+window.configure(fg_color=f"{background}")
 
 
 main_window_frame(window,manga_title)
