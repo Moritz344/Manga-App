@@ -8,10 +8,9 @@ from CTkMessagebox import CTkMessagebox
 import tkinter as tk
 import random
 import shutil
-from CTkToolTip import *
+from CTkToolTip.CTkToolTip import *
 from CTkCodeBox import *
 
-is_Downloaded = False
 
 
 def main_window_frame(window,manga_title):
@@ -164,7 +163,7 @@ class ReadMangaScreen:
         self.manga_title = manga_title
         self.window = window
 
-        self.manga_path = f"Mangadex/{manga_title}"
+        self.manga_path = f"{manga_location}/{manga_title}"
         self.chapter_start = chapter_start
 
         self.chapter_number = 0
@@ -364,7 +363,7 @@ class ChapterView:
     def __init__(self,manga_title,window):
 
         self.window = window
-        self.path = f"Mangadex/{manga_title}"
+        self.path = f"{manga_location}/{manga_title}"
         self.chapter_list = []
         self.curr_block = ""
         self.all_chapters = None
@@ -598,7 +597,7 @@ class ChapterView:
                 height=100,
                 corner_radius=0,
                 anchor="ne",
-                font=(None,30,"bold"),fg_color=f"{block_color}",hover_color=f"{button_hover_color}",
+                font=(None,font_size,"bold"),fg_color=f"{block_color}",hover_color=f"{button_hover_color}",
                 command= lambda m=self.curr_block: self.read_manga(m))
 
                 block.pack(padx=0,pady=5,anchor="w")
@@ -648,7 +647,7 @@ class DisplayMangaInfos:
         onvalue="on",
         offvalue="off",
         corner_radius=50,
-        font=(None,20),
+        font=(None,font_size),
         command = self.switch_to_random,
         hover_color=f"{button_hover_color}")
         self.checkbox_random.grid(sticky="w",row=0,column=0,pady=10,padx=80)
@@ -660,7 +659,7 @@ class DisplayMangaInfos:
         offvalue="off",
         variable=self.checkbox_popular_var,
         corner_radius=50,
-        font=(None,20),
+        font=(None,font_size),
         command = self.switch_to_popular,
         hover_color=f"{button_hover_color}")
 
@@ -762,7 +761,7 @@ class DisplayMangaInfos:
 
 
     def check_manga_exist(self,manga_name):
-        path = f"Mangadex/{manga_name}"
+        path = f"{manga_location}/{manga_name}"
         if os.path.exists(path):
             print("Manga exists",manga_name)
         else:
@@ -839,7 +838,7 @@ class DisplayMangaInfos:
 
                 try:
                     block_label = ctk.CTkLabel(
-                    text_block,text=f"{result[i]}",compound="left",font=(None,20,"bold"),text_color="white",
+                    text_block,text=f"{result[i]}",compound="left",font=(None,font_size,"bold"),text_color="white",
                     fg_color="transparent")
                 except Exception as e:
                     print(e)
@@ -894,11 +893,11 @@ class Settings:
         self.main_frame.grid(row=0,column=1,sticky="nsew",padx=(20,10),pady=20)
         
         self.settings_btn_1 = ctk.CTkButton(self.side_frame,
-        text="All",
+        text="General",
         font=(None,20),
         compound="left",
-        fg_color="transparent",
-        hover_color=f"{button_hover_color}"
+        fg_color=f"{button_hover_color}",
+        hover_color=f"{button_color}"
 
         )
         self.settings_btn_2 = ctk.CTkButton(self.side_frame,
@@ -919,22 +918,69 @@ class Settings:
         self.setting_frame_4 = ctk.CTkFrame(self.main_frame,fg_color="transparent",width=1500)
 
         f_1 = ctk.CTkLabel(self.setting_frame_1,text="Font Size",font=(None,30),width=100)
-        f_2 = ctk.CTkLabel(self.setting_frame_1,text="Change the font size.",width=100,font=(None,15))
+        f_2 = ctk.CTkLabel(self.setting_frame_1,text="Change the ui font size.",width=100,font=(None,15))
+
+        self.font_var = tk.IntVar(value=font_size)
+        font_slider = ctk.CTkSlider(self.setting_frame_1,from_=0,to=30,
+        variable=self.font_var,
+        command=self.slider_event,)
+
+        self.font_number_label = ctk.CTkLabel(self.setting_frame_1,
+        text=f"{self.font_var.get()}",
+        font=(None,20))
+
+        self.font_number_label.place(x=14,y=90)
+        font_slider.place(x=10,y=130)
 
         f_1.place(x=10,y=10)
         f_2.place(x=10,y=60)
 
         f_3 = ctk.CTkLabel(self.setting_frame_2,text="Chapter Download",font=(None,30),width=100)
-        f_4 = ctk.CTkLabel(self.setting_frame_2,text="Download this many chapters for a manga",width=100,font=(None,15))
+        f_4 = ctk.CTkLabel(self.setting_frame_2,text="Change the amount of chapters to download",
+        width=100,font=(None,15),
+        )
+        
+        self.chapter_var = ctk.StringVar(value="Download All")
+        self.values: list = ["Download All","Download Half","Download 10","Download 20","Download 30"]
+        self.chapter_choices = ctk.CTkComboBox(self.setting_frame_2,values=self.values,
+        state="readonly",
+        font=(None,15),width=150)
+        self.chapter_choices.set(self.chapter_var.get())
+        
+        self.chapter_choices.place(x=10,y=100)
 
-        f_3.place(x=10,y=110)
-        f_4.place(x=10,y=160)
+        f_3.place(x=10,y=10)
+        f_4.place(x=10,y=60)
 
         f_5 = ctk.CTkLabel(self.setting_frame_3,text="Reset History",font=(None,30),width=100)
         f_6 = ctk.CTkLabel(self.setting_frame_3,text="Delete every manga in the history tab",width=100,font=(None,15))
 
-        f_5.place(x=10,y=110)
-        f_6.place(x=10,y=160)
+        self.reset_btn = ctk.CTkButton(self.setting_frame_3,text="Reset",font=(None,20),
+        fg_color="red",hover_color="#a05a58")
+        self.reset_btn.place(x=10,y=100)
+
+        f_5.place(x=10,y=10)
+        f_6.place(x=10,y=60)
+
+        f_7 = ctk.CTkLabel(self.setting_frame_4,text="Save Mangas",font=(None,30),width=100)
+        f_8 = ctk.CTkLabel(self.setting_frame_4,text="Change the location for saving mangas",width=100,font=(None,15))
+        
+        self.manga_path_entry = ctk.CTkEntry(self.setting_frame_4,font=(None,20),width=400)
+        self.manga_path_entry.insert(tk.END,f"Nero-Manga/src/{manga_location}")
+        self.manga_path_entry.place(x=10,y=100)
+
+        self.manga_path_btn = ctk.CTkButton(self.setting_frame_4,
+        text="Open",font=(None,20),fg_color=f"{button_color}",hover_color=f"{button_hover_color}")
+        self.manga_path_btn.place(x=10,y=150)
+
+        self.manga_path_save_btn = ctk.CTkButton(self.setting_frame_4,
+        text="Save",font=(None,20),fg_color=f"{color_green}",hover_color=f"{button_hover_color}",
+        command=self.save_manga_location)
+        self.manga_path_save_btn.place(x=180,y=150)
+
+
+        f_7.place(x=10,y=10)
+        f_8.place(x=10,y=60)
 
         self.setting_frame_1.pack()
         self.setting_frame_2.pack()
@@ -955,6 +1001,25 @@ class Settings:
         self.home_btn.grid(row=2,column=0,padx=30,pady=0,sticky="w")
 
         #self.insert_json()
+
+    def check_manga_path(self,path) -> str:
+        # user has to give the full path if not the path is incorrect
+        if os.path.exists(path):
+            print("Path exists; ",path)
+            return path
+        else:
+            path = "Nero-Manga/src/Mangadex"
+            print("Path Does not exist changing to default: Nero-Manga/src/Mangadex/")
+            return path
+
+
+    def save_manga_location(self):
+        path = self.check_manga_path(self.manga_path_entry.get())
+        print("Saved manga location:",path)
+
+    def slider_event(self,value):
+        self.font_number_label.configure(text=f"{self.font_var.get()}")
+        write_data_to_json("settings","font_size",self.font_var.get())
                   
     def insert_json(self):
         code = """
