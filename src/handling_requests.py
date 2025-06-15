@@ -4,6 +4,8 @@ import shutil
 from PIL import Image,ImageTk
 import io
 from concurrent.futures import ThreadPoolExecutor
+from settings import manga_location
+
 # doku: https://api.mangadex.org/docs/04-chapter/feed/
 
 # -- Manga Search Engine
@@ -264,10 +266,10 @@ def get_server_data(chapter_id):
 
 def downloading_chapters(pages,chapter_number,manga_title,host,chapter_hash):
         chapter_number = int(chapter_number)
-        #print(chapter_number)
+        path = manga_location
         print("Started Downloading ...")
         for num in range(chapter_number):
-            folder_path = f"Mangadex/{manga_title}/Chapter_{num}"
+            folder_path = f"{path}/{manga_title}/Chapter_{num}"
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path,)
 
@@ -277,3 +279,4 @@ def downloading_chapters(pages,chapter_number,manga_title,host,chapter_hash):
                     with open(f"{folder_path}/Page_{i}","wb") as file:
                         file.write(image_response.content)
                 print(f"Downloaded {len(pages)} pages.")
+
