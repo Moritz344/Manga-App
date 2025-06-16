@@ -2,3 +2,6 @@ pillow
 tk
 customtkinter
 requests
+CTkMessagebox
+tklinenums
+Pygments
