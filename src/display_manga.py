@@ -6,10 +6,11 @@ from settings import *
 from write_to_json import write_data_to_json
 from CTkMessagebox import CTkMessagebox
 import tkinter as tk
+from tkinter import filedialog
 import random
 import shutil
 from CTkToolTip.CTkToolTip import *
-from CTkCodeBox import *
+from CTkCodeBox.CTkCodeBox import *
 
 
 
@@ -877,6 +878,9 @@ class Settings:
         self.window = window
         self.clear_ui_elements()
 
+        self.display_icon = ctk.CTkImage(Image.open("assets/icons/display_100.png"),size=(25,25))
+        self.general_icon = ctk.CTkImage(Image.open("assets/icons/settings.png"),size=(25,25))
+
         self.home_btn = ctk.CTkButton(
         self.window,
         text="Home",
@@ -889,23 +893,26 @@ class Settings:
         self.side_frame.grid(row=0,column=0,sticky="nsew",padx=(20,10),pady=20)
         
 
-        self.main_frame = ctk.CTkFrame(self.window,width=1500,height=900)
+        self.main_frame = ctk.CTkFrame(self.window,width=1500,height=900,)
         self.main_frame.grid(row=0,column=1,sticky="nsew",padx=(20,10),pady=20)
         
         self.settings_btn_1 = ctk.CTkButton(self.side_frame,
         text="General",
         font=(None,20),
-        compound="left",
+        image=self.general_icon,
+        command=self.general_settings_tab,
         fg_color=f"{button_hover_color}",
         hover_color=f"{button_color}"
 
         )
         self.settings_btn_2 = ctk.CTkButton(self.side_frame,
         text="Display",
+        image=self.display_icon,
         font=(None,20),
         compound="left",
         fg_color="transparent",
-        hover_color=f"{button_hover_color}"
+        hover_color=f"{button_hover_color}",
+        command=self.display_tab
 
         )
 
@@ -943,9 +950,9 @@ class Settings:
         self.chapter_var = ctk.StringVar(value="Download All")
         self.values: list = ["Download All","Download Half","Download 10","Download 20","Download 30"]
         self.chapter_choices = ctk.CTkComboBox(self.setting_frame_2,values=self.values,
-        state="readonly",
+        state="readonly",command=self.chapter_amount,
         font=(None,15),width=150)
-        self.chapter_choices.set(self.chapter_var.get())
+        self.chapter_choices.set(chapter_download)
         
         self.chapter_choices.place(x=10,y=100)
 
@@ -965,12 +972,14 @@ class Settings:
         f_7 = ctk.CTkLabel(self.setting_frame_4,text="Save Mangas",font=(None,30),width=100)
         f_8 = ctk.CTkLabel(self.setting_frame_4,text="Change the location for saving mangas",width=100,font=(None,15))
         
-        self.manga_path_entry = ctk.CTkEntry(self.setting_frame_4,font=(None,20),width=400)
-        self.manga_path_entry.insert(tk.END,f"Nero-Manga/src/{manga_location}")
+        self.manga_path_entry = ctk.CTkEntry(self.setting_frame_4,font=(None,20),width=600,
+        placeholder_text="/home/bob/Mangas")
+        self.manga_path_entry.insert(tk.END,f"{manga_location}")
         self.manga_path_entry.place(x=10,y=100)
 
         self.manga_path_btn = ctk.CTkButton(self.setting_frame_4,
-        text="Open",font=(None,20),fg_color=f"{button_color}",hover_color=f"{button_hover_color}")
+        text="Open",font=(None,20),fg_color=f"{button_color}",hover_color=f"{button_hover_color}",
+        command=self.open_file_manager)
         self.manga_path_btn.place(x=10,y=150)
 
         self.manga_path_save_btn = ctk.CTkButton(self.setting_frame_4,
@@ -988,40 +997,53 @@ class Settings:
         self.setting_frame_4.pack()
 
 
-        self.customize = CTkCodeBox(self.main_frame,
-        language="json",
-        width=1300,
-        height=800,
-        font=(None,20),
-        wrap=True,
-        line_numbering=False)
-
-        #self.customize.grid(row=0,column=0,padx=0,pady=10)
 
         self.home_btn.grid(row=2,column=0,padx=30,pady=0,sticky="w")
 
         #self.insert_json()
 
+    def chapter_amount(self,value):
+        write_data_to_json("settings","chapter_download",value)
+
     def check_manga_path(self,path) -> str:
         # user has to give the full path if not the path is incorrect
         if os.path.exists(path):
-            print("Path exists; ",path)
+            print("Path exists: ",path)
+            CTkMessagebox(self.window,justify="center",
+            message=f"New manga path for mangas is saved in: {path}",
+            icon="check",title="Changed Manga Path",option_1="OK")
             return path
         else:
-            path = "Nero-Manga/src/Mangadex"
-            print("Path Does not exist changing to default: Nero-Manga/src/Mangadex/")
+            CTkMessagebox(self.window,justify="center",
+            message="Path does not Exist. Please be sure to name the full path",
+            icon="cancel",title="FileNotFoundError")
+            print(f"Path {path} does not exist")
+            path = manga_location
+            self.manga_path_entry.delete(0,tk.END)
+            self.manga_path_entry.insert(tk.END,path)
             return path
+    
+    def open_file_manager(self):
+        try:
+            file_path = filedialog.askdirectory(title="Open File",)
+            path = self.check_manga_path(file_path)
+            write_data_to_json("settings","manga_location",path)
+            self.manga_path_entry.delete(0,tk.END)
+            self.manga_path_entry.insert(tk.END,path)
+        except Exception as e:
+            print("open file manager:",e)
 
 
     def save_manga_location(self):
         path = self.check_manga_path(self.manga_path_entry.get())
+        write_data_to_json("settings","manga_location",path)
         print("Saved manga location:",path)
 
     def slider_event(self,value):
         self.font_number_label.configure(text=f"{self.font_var.get()}")
         write_data_to_json("settings","font_size",self.font_var.get())
                   
-    def insert_json(self):
+    def insert_json(self,customize):
         code = """
             },
             "settings": {
@@ -1040,23 +1062,64 @@ class Settings:
 
         """
 
-        self.customize.insert(tk.END,code)
+        customize.insert(tk.END,code)
 
-    def reset_grid_config(self):
+    def reset_grid_config(self) -> None:
         def reset_grid_config(self):
             self.window.grid_columnconfigure(0, weight=0)  # Seitenleiste
             self.window.grid_columnconfigure(1, weight=1)  # Hauptbereich
             self.window.grid_rowconfigure(0, weight=1)     # Zeile für Frames
 
-
-
     def clear_ui_elements(self) -> None:
         for widget in self.window.winfo_children():
             widget.destroy()
+
+    def clear_settings_tab(self):
+        self.settings_frames = [self.setting_frame_1,self.setting_frame_2,self.setting_frame_3,self.setting_frame_4]
+        for i,v in  enumerate(self.settings_frames):
+            for widget in self.settings_frames[i].winfo_children():
+                widget.destroy()
+
+    def general_settings_tab(self):
+        self.clear_ui_elements()
+        a = Settings(self.window)
+        
+
     def home_screen(self) -> None:
         self.reset_grid_config()
         self.clear_ui_elements()
         main_window_frame(self.window,f"{manga_name}")
+    
+    def display_tab(self) -> None:
+        self.clear_settings_tab()
+
+        self.settings_btn_1.configure(fg_color=f"transparent")
+        self.settings_btn_2.configure(fg_color=f"{button_hover_color}")
+
+        self.display_frame_1 = ctk.CTkFrame(self.main_frame,fg_color="transparent",width=1500)
+        self.display_frame_2 = ctk.CTkFrame(self.main_frame,fg_color="transparent",width=1500,)
+
+        ctk.CTkLabel(self.display_frame_1,text="Theme",font=(None,30)).place(x=10,y=0)
+        ctk.CTkLabel(self.display_frame_1,text="Customize your Theme",font=(None,20)).place(x=10,y=40)
+
+
+        customize = CTkCodeBox(self.display_frame_2,
+        language="json",
+        font=(None,20),
+        width=1400,
+        height=600,
+        wrap=True,
+        line_numbering=False)
+        customize.pack()
+
+        self.reset_btn = ctk.CTkButton(self.main_frame,text="Reset",fg_color="red",font=(None,20),
+        hover_color="#a05a58")
+        self.reset_btn.place(x=50,y=760)
+
+        self.insert_json(customize)
+        
+        self.display_frame_1.place(x=50,y=50)
+        self.display_frame_2.place(x=50,y=150)
 
 
 
