@@ -4,7 +4,7 @@ import shutil
 from PIL import Image,ImageTk
 import io
 from concurrent.futures import ThreadPoolExecutor
-from settings import manga_location
+from settings import manga_location,chapter_download
 
 # doku: https://api.mangadex.org/docs/04-chapter/feed/
 
@@ -268,7 +268,24 @@ def downloading_chapters(pages,chapter_number,manga_title,host,chapter_hash):
         chapter_number = int(chapter_number)
         path = manga_location
         print("Started Downloading ...")
-        for num in range(chapter_number):
+
+        chapter_to_download = None
+        if chapter_download == "Download Half":
+            chapter_to_download = chapter_number // 2
+        elif chapter_download == "Download 10" and chapter_number >= 10:
+            chapter_to_download = 10
+        elif chapter_download == "Download 20" and chapter_number >= 10:
+            chapter_to_download = 20
+        elif chapter_download == "Download 30" and chapter_number >= 10:
+            chapter_to_download = 30
+        else:
+            chapter_to_download = chapter_number
+        
+        print("Chapter Number",chapter_number)
+        print("Download:",chapter_to_download)
+        
+
+        for num in range(chapter_to_download):
             folder_path = f"{path}/{manga_title}/Chapter_{num}"
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path,)
