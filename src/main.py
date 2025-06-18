@@ -10,7 +10,7 @@ from settings import *
 #TODO: manga in scrollableframe?
 #TODO: mark mangas as downloaded
 #TODO: mangas speichern in sql lite
-#TODO: history page/settings page
+#TODO: history page
 #TODO: Markierte Mangas Manga Page
 
 
