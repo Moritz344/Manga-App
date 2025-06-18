@@ -1,4 +1,4 @@
-# 📚 Manga-App
+# 📚 Nero-Manga
 Read and download mangas.
 
 <image src="https://github.com/user-attachments/assets/98824e90-8684-4679-ac96-aceb4fe161f0" width="600" height="500">
