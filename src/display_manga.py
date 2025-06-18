@@ -960,7 +960,7 @@ class Settings:
         f_4.place(x=10,y=60)
 
         f_5 = ctk.CTkLabel(self.setting_frame_3,text="Reset History",font=(None,30),width=100)
-        f_6 = ctk.CTkLabel(self.setting_frame_3,text="Delete every manga in the history tab",width=100,font=(None,15))
+        f_6 = ctk.CTkLabel(self.setting_frame_3,text="Reset your current history ",width=100,font=(None,15))
 
         self.reset_btn = ctk.CTkButton(self.setting_frame_3,text="Reset",font=(None,20),
         fg_color="red",hover_color="#a05a58")
@@ -1043,27 +1043,6 @@ class Settings:
         self.font_number_label.configure(text=f"{self.font_var.get()}")
         write_data_to_json("settings","font_size",self.font_var.get())
                   
-    def insert_json(self,customize):
-        code = """
-            },
-            "settings": {
-                "button_color": "#44414B",
-                "button_hover_color": "#5C5963",
-                "button_text_color": "#F6F5F4",
-                "block_color": "#1E1E2E",
-                "color_green": "#136C26",
-                "color_blue": "#1C2589",
-                "dark charcoal": "#121212",
-                "neon pink": "#FF3CAC",
-                "electric Blue": "#00B2FF",
-                "light gray": "#E0E0E0",
-                "background": "#121212"
-            },
-
-        """
-
-        customize.insert(tk.END,code)
-
     def reset_grid_config(self) -> None:
         def reset_grid_config(self):
             self.window.grid_columnconfigure(0, weight=0)  # Seitenleiste
@@ -1089,6 +1068,61 @@ class Settings:
         self.reset_grid_config()
         self.clear_ui_elements()
         main_window_frame(self.window,f"{manga_name}")
+
+    def save_theme_settings(self) -> None:
+        max_entry_length: int = 6   
+
+        self.window.focus()
+
+
+        background_color = self.background_entry.get()
+        new_button_color = self.button_entry.get()
+        new_text_color = self.text_color_entry.get() 
+
+        #print("Background",background_color,len(background_color) - 1)
+        #print("Button-COlor",button_color,len(button_color) - 1)
+        #print("Text-Color",text_color,len(text_color) - 1)
+
+        if len(background_color) - 1 <= max_entry_length:
+            print("baclground color saved")
+            write_data_to_json("settings","background",background_color)
+        else:
+            self.update_entry_box()
+            CTkMessagebox(self.main_frame,justify="center",icon="cancel",title="Invalid Hex code",
+            message="Invalid color.")
+        if len(button_color) - 1 <= max_entry_length:
+            print("button color saved")
+            write_data_to_json("settings","button_color",new_button_color)
+        else:
+            self.update_entry_box()
+            CTkMessagebox(self.main_frame,justify="center",icon="cancel",title="Invalid Hex code",
+            message="Invalid color.")
+        if len(text_color) - 1 <= max_entry_length:
+            write_data_to_json("settings","text_color",new_text_color)
+        else:
+            self.update_entry_box()
+            CTkMessagebox(self.main_frame,justify="center",icon="cancel",title="Invalid Hex code",
+            message="Invalid color.")
+            
+    
+    def update_entry_box(self):
+        self.background_entry.delete(0,tk.END)
+        self.text_color_entry.delete(0,tk.END)
+        self.button_entry.delete(0,tk.END)
+
+        self.background_entry.insert(0,f"{background}")
+        self.text_color_entry.insert(0,f"{text_color}")
+        self.button_entry.insert(0,f"{button_color}")
+
+    def reset_colors_to_default(self):
+        self.window.focus()
+        self.background_entry.delete(0,tk.END)
+        self.text_color_entry.delete(0,tk.END)
+        self.button_entry.delete(0,tk.END)
+
+        self.background_entry.insert(0,"#121212")
+        self.text_color_entry.insert(0,"#f9f9f9")
+        self.button_entry.insert(0,"#44414B")
     
     def display_tab(self) -> None:
         self.clear_settings_tab()
@@ -1098,28 +1132,51 @@ class Settings:
 
         self.display_frame_1 = ctk.CTkFrame(self.main_frame,fg_color="transparent",width=1500)
         self.display_frame_2 = ctk.CTkFrame(self.main_frame,fg_color="transparent",width=1500,)
+        self.display_frame_3 = ctk.CTkFrame(self.main_frame,fg_color="transparent",width=1500,)
+        
+        ctk.CTkLabel(self.display_frame_2,text="Background-Color",font=(None,30)).place(x=10,y=10)
+        self.background_entry = ctk.CTkEntry(self.display_frame_2,placeholder_text="#121212",
+        font=(None,20),)
+        self.background_entry.place(x=10,y=60)
+
+        ctk.CTkLabel(self.display_frame_2,text="Button-Color",font=(None,30)).place(x=10,y=100)
+        self.button_entry = ctk.CTkEntry(self.display_frame_2,placeholder_text="#44414B",
+        font=(None,20),)
+        self.button_entry.place(x=10,y=150)
+
+
 
         ctk.CTkLabel(self.display_frame_1,text="Theme",font=(None,30)).place(x=10,y=0)
         ctk.CTkLabel(self.display_frame_1,text="Customize your Theme",font=(None,20)).place(x=10,y=40)
 
+        
+        
+        ctk.CTkLabel(self.display_frame_3,text="Colorscheme",font=(None,30)).place(x=10,y=100)
+        self.colorscheme_box = ctk.CTkComboBox(self.display_frame_3,values=["Default","Dracula","Catppuccin"])
+        self.colorscheme_box.place(x=10,y=150)
 
-        customize = CTkCodeBox(self.display_frame_2,
-        language="json",
-        font=(None,20),
-        width=1400,
-        height=600,
-        wrap=True,
-        line_numbering=False)
-        customize.pack()
+        ctk.CTkLabel(self.display_frame_3,text="Text-Color",font=(None,30)).place(x=10,y=10)
+        self.text_color_entry = ctk.CTkEntry(self.display_frame_3,placeholder_text="#f2f2f2",
+        font=(None,20),)
+        self.text_color_entry.place(x=10,y=60)
+
+        self.save_btn = ctk.CTkButton(self.main_frame,text="Save",
+        fg_color="green",hover_color="#235730",font=(None,20),
+        command=self.save_theme_settings)
 
         self.reset_btn = ctk.CTkButton(self.main_frame,text="Reset",fg_color="red",font=(None,20),
-        hover_color="#a05a58")
-        self.reset_btn.place(x=50,y=760)
+        hover_color="#a05a58",command=self.reset_colors_to_default)
 
-        self.insert_json(customize)
+        self.reset_btn.place(x=200,y=730)
+        self.save_btn.place(x=50,y=730)
+
+        CTkToolTip(self.reset_btn,message="Reset colors to default colors")
+        
         
         self.display_frame_1.place(x=50,y=50)
         self.display_frame_2.place(x=50,y=150)
+        self.display_frame_3.place(x=50,y=400)
 
+        self.update_entry_box()
 
 
