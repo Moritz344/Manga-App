@@ -1068,6 +1068,8 @@ class Settings:
         self.reset_grid_config()
         self.clear_ui_elements()
         main_window_frame(self.window,f"{manga_name}")
+        CTkMessagebox(self.window,justify="center",
+        message="Restart the app to see the changed settings in action!",icon="info",title="Settings")
 
     def save_theme_settings(self) -> None:
         max_entry_length: int = 6   
@@ -1123,7 +1125,12 @@ class Settings:
         self.background_entry.insert(0,"#121212")
         self.text_color_entry.insert(0,"#f9f9f9")
         self.button_entry.insert(0,"#44414B")
-    
+
+    def change_colorscheme(self,choice):
+        print(choice)
+        write_data_to_json("settings","colorscheme",choice)
+        
+
     def display_tab(self) -> None:
         self.clear_settings_tab()
 
@@ -1152,7 +1159,10 @@ class Settings:
         
         
         ctk.CTkLabel(self.display_frame_3,text="Colorscheme",font=(None,30)).place(x=10,y=100)
-        self.colorscheme_box = ctk.CTkComboBox(self.display_frame_3,values=["Default","Dracula","Catppuccin"])
+        self.colorscheme_var = ctk.StringVar(value=f"{colorscheme}") 
+        self.colorscheme_box = ctk.CTkComboBox(self.display_frame_3,
+        values=["Default","Dracula","Catppuccin"],variable=self.colorscheme_var,
+        command=self.change_colorscheme)
         self.colorscheme_box.place(x=10,y=150)
 
         ctk.CTkLabel(self.display_frame_3,text="Text-Color",font=(None,30)).place(x=10,y=10)
