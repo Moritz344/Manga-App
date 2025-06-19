@@ -9,8 +9,9 @@ import tkinter as tk
 from tkinter import filedialog
 import random
 import shutil
-from CTkToolTip.CTkToolTip import *
-from CTkCodeBox.CTkCodeBox import *
+from CTkToolTip import *
+from CTkCodeBox import *
+import threading
 
 
 
@@ -127,36 +128,54 @@ def main_window_frame(window,manga_title):
 
 class CollectMangaInfos(object):
     def __init__(self,manga_title,window):
-                self.window = window
-                print()
-                manga_id = get_manga_title(manga_title)
-                print()
-                
-                self.chapters= get_manga_chapters(manga_id)
-                print(self.chapters)
+        self.window = window
+        print()
+        manga_id = get_manga_title(manga_title)
+        print()
+        
+        self.chapters= get_manga_chapters(manga_id)
+        #print(self.chapters)
 
-                self.manga_id = manga_id
-                self.manga_title = manga_title
+        self.manga_id = manga_id
+        self.manga_title = manga_title
+        
+        CTkMessagebox(
+        self.window,
+        title="Downloading",
+        font=(None,15),
+        icon="assets/icons/coffee.png",
+        message = f"Grab a coffee while we download your manga using these settings: {chapter_download}")
+ 
+    
 
+    def start_download_thread(self):
+        # startet download_manga in einem thread -> app freezed nicht
+        threading.Thread(target=self.download_manga,daemon=True).start()
 
     def download_manga(self):
         error = ""
         try:
-                for chapter_id,chapter_number in self.chapters:
+                for i,(chapter_id,chapter_number) in enumerate(self.chapters):
                     result = get_server_data(chapter_id)
                     if result is None:
                         return
                     pages,host,chapter_hash = result
-
+                    
+                    
 
                     downloading_chapters(pages,chapter_number,self.manga_title,host,chapter_hash)
 
-                    print("id,num: ",chapter_id,chapter_number)
-                    print("pages,host,hash",pages,host,chapter_hash)
-                    print("Manga id",self.manga_id)
+
+                #print("id,num: ",chapter_id,chapter_number)
+            #print("pages,host,hash",pages,host,chapter_hash)
+                    
+                
+                                   
+                
         except Exception as e:
             error = e
-        return error
+            return error
+        
 
 class ReadMangaScreen:
     def __init__(self,manga_title,window,chapter_start):
@@ -168,7 +187,7 @@ class ReadMangaScreen:
         self.chapter_start = chapter_start
 
         self.chapter_number = 0
-        print("DEBUG",chapter_start)
+        #print("DEBUG",chapter_start)
         if self.chapter_start == "":
             self.current_chapter_number = 0
         else:
@@ -263,7 +282,7 @@ class ReadMangaScreen:
             self.window.grid_rowconfigure(i,weight=0)
 
     def next_chapter(self):
-            print(self.current_chapter_number,self.chapter_number)
+        #print(self.current_chapter_number,self.chapter_number)
             if self.current_chapter_number <= self.chapter_number - 1:
                 self.current_page_number = 0
                 self.current_chapter_number += 1
@@ -305,7 +324,7 @@ class ReadMangaScreen:
         self.chapter_number = len(chapter_list)
 
             #print(page_list)
-        print(f"get_pages_chapters: {self.manga_path}/Chapter_{self.current_chapter_number}/Page_{self.current_page_number}")
+        #print(f"get_pages_chapters: {self.manga_path}/Chapter_{self.current_chapter_number}/Page_{self.current_page_number}")
 
         self.chapter_label.configure(text=f"Chapter (Downloaded): {self.chapter_number}")
 
@@ -371,7 +390,7 @@ class ChapterView:
         self.description = None
         self.genres: list = None
         self.manga_status: str = None
-
+        
 
 
         self.frame_1 = ctk.CTkFrame(window,width=800,height=1000,fg_color="#242423",corner_radius=10)
@@ -482,6 +501,7 @@ class ChapterView:
         self.get_description_len()
         self.get_chapters()
         self.combobox_order(self.combobox_var.get())
+
     
     def manga_status_handler(self):
         manga_id = get_manga_title(manga_title)
@@ -492,13 +512,13 @@ class ChapterView:
     def get_description_len(self):
         text = self.description_label.cget("text") 
         desc_len = len(text)
-        print(desc_len)
+        #print(desc_len)
 
     def delete_manga(self,show_message):
         try:
             if os.path.exists(self.path):
                 shutil.rmtree(self.path)
-                print(f"Successfully Removed: {self.path}")
+                #print(f"Successfully Removed: {self.path}")
                 if show_message:
                     CTkMessagebox(
                     self.window,
@@ -596,9 +616,9 @@ class ChapterView:
                 text=f"{i}  ",
                 width=500,
                 height=100,
-                corner_radius=0,
+                corner_radius=10,
                 anchor="ne",
-                font=(None,font_size,"bold"),fg_color=f"{block_color}",hover_color=f"{button_hover_color}",
+                font=(None,30,"bold"),fg_color=f"#242423",hover_color=f"#454150",
                 command= lambda m=self.curr_block: self.read_manga(m))
 
                 block.pack(padx=0,pady=5,anchor="w")
@@ -767,9 +787,9 @@ class DisplayMangaInfos:
             print("Manga exists",manga_name)
         else:
             d = CollectMangaInfos(manga_name,self.window)
-            error = d.download_manga()
+            err = d.start_download_thread()
         
-            return error
+            return err
 
     def clear_all_ui_elements(self):
         #self.scrollable_frame.grid_forget()
@@ -804,8 +824,8 @@ class DisplayMangaInfos:
 
     def open_manga(self,r):
         print("Downloading Manga now: ",manga_name)
-        error = self.check_manga_exist(r)
-        if not error :
+        err = self.check_manga_exist(r)
+        if not err:
             write_data_to_json("manga_data","manga_title",r)
             write_data_to_json("user_var",f"{r}",0)
 
@@ -998,7 +1018,7 @@ class Settings:
 
 
 
-        self.home_btn.grid(row=2,column=0,padx=30,pady=0,sticky="w")
+        self.home_btn.grid(row=1,column=0,padx=30,pady=0,sticky="w")
 
         #self.insert_json()
 

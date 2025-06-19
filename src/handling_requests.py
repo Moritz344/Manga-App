@@ -5,6 +5,7 @@ from PIL import Image,ImageTk
 import io
 from concurrent.futures import ThreadPoolExecutor
 from settings import manga_location,chapter_download
+from nerd_debug import NerdCLI
 
 # doku: https://api.mangadex.org/docs/04-chapter/feed/
 
@@ -12,10 +13,11 @@ from settings import manga_location,chapter_download
 
 base_url = "https://api.mangadex.org"
 manga_title = None
-
+nerd = NerdCLI()
 
 
 def search_manga_result(manga_title) -> list:
+    global nerd
     r = requests.get(f"{base_url}/manga?title={manga_title}")
     manga_data = r.json()
 
@@ -27,13 +29,14 @@ def search_manga_result(manga_title) -> list:
                 #name = manga_data["data"][index]["attributes"]["title"]["en"]
                 name = index["attributes"]["title"]["en"]
                 results.append(name)
+                nerd.start_output(name)
             except Exception as e:
-                print("DEBUG:",e)
-            print("Manga Name:",name)
-
+                print("Error in search_manga_result function: ",e)
+            
     return results
 
 def get_manga_status(manga_id) -> str:
+    global nerd
     global base_url
     url = f"{base_url}/manga/{manga_id}"
     
@@ -43,12 +46,13 @@ def get_manga_status(manga_id) -> str:
             data = r.json().get("data")
 
             manga_status = data["attributes"]["status"]
+            nerd.print_status_code(r.status_code)
             
         else:
-            print(r.status_code)
+            nerd.print_status_code(r.status_code)
     except Exception as e:
         manga_status = "No Status Found"
-        print("DEBUG (manga_status):",e)
+        print("Error in (get_manga_status):",e)
     
     return manga_status
 
@@ -67,8 +71,12 @@ def get_random_manga() -> list:
                 random_manga = data["attributes"]["title"]["en"]
                 random_manga_list.append(random_manga)
 
+                nerd.start_output(random_manga)
+
+                nerd.print_status_code(r.status_code)
+
             else:
-                print(r.status_code)
+                nerd.print_status_code(r.status_code)
 
     except Exception as e:
         random_manga_list = []
@@ -93,7 +101,7 @@ def get_manga_genre(manga_id) -> list:
 
 
         else:
-            print(response.status_code)
+            nerd.print_status_code(r.status_code)
 
     except Exception as e:
         genre_list = ["No Genres found."]
@@ -135,7 +143,7 @@ def get_manga_description(manga_id) -> str:
             description = data["attributes"]["description"]["en"]
 
         else:
-            print(response.status_code)
+            print(nerd.print_status_code)
 
 
     except KeyError as e:
@@ -146,8 +154,8 @@ def get_manga_description(manga_id) -> str:
 
 def get_manga_cover(title):
     manga_id = get_manga_title(title)
-    print(manga_id)
-    print(f"getting cover for {title} with {manga_id}")
+    #print(manga_id)
+    #print(f"getting cover for {title} with {manga_id}")
 
     cover_url = f"https://api.mangadex.org/cover?manga[]={manga_id}"
     
@@ -159,11 +167,11 @@ def get_manga_cover(title):
 
 
         #print(filename)
-        print(r_1.status_code)
+        print(nerd.print_status_code)
 
         return manga_id,filename
     else:
-        print(r_1.status_code)
+        print(nerd.print_status_code)
 
 
 def load_cover_image(manga_id,filename,sizex,sizey):
@@ -236,7 +244,7 @@ def get_manga_chapters(manga_id,):
                         return
 
                     chapter_list.append((chapter_id,chapter_number))
-                    print("chapter number",chapter_number)
+                    #print("chapter number",chapter_number)
 
             ## get one chapter for testing
             #first_chapter = chapters[0]
@@ -267,7 +275,6 @@ def get_server_data(chapter_id):
 def downloading_chapters(pages,chapter_number,manga_title,host,chapter_hash):
         chapter_number = int(chapter_number)
         path = manga_location
-        print("Started Downloading ...")
 
         chapter_to_download = None
         if chapter_download == "Download Half":
@@ -281,8 +288,6 @@ def downloading_chapters(pages,chapter_number,manga_title,host,chapter_hash):
         else:
             chapter_to_download = chapter_number
         
-        print("Chapter Number",chapter_number)
-        print("Download:",chapter_to_download)
         
 
         for num in range(chapter_to_download):
@@ -296,4 +301,5 @@ def downloading_chapters(pages,chapter_number,manga_title,host,chapter_hash):
                     with open(f"{folder_path}/Page_{i}","wb") as file:
                         file.write(image_response.content)
                 print(f"Downloaded {len(pages)} pages.")
+
 

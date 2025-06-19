@@ -7,7 +7,8 @@ from PIL import Image
 from display_manga import DisplayMangaInfos,ReadMangaScreen,main_window_frame
 from settings import *
 
-#TODO: manga in scrollableframe?
+#TODO: cli ausgabe verbessern
+#TODO: bug bei chapterview -> combobox ui farben verändern sich
 #TODO: mark mangas as downloaded
 #TODO: mangas speichern in sql lite
 #TODO: history page
