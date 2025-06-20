@@ -12,7 +12,7 @@ import shutil
 from CTkToolTip import *
 from CTkCodeBox import *
 import threading
-
+import functools
 
 
 def main_window_frame(window,manga_title):
@@ -127,6 +127,19 @@ def main_window_frame(window,manga_title):
     return manga_title
 
 class CollectMangaInfos(object):
+    _instance_cache = {}
+    def __new__(cls,manga_title,window,):
+        
+        key = (manga_title,)
+
+        if key in cls._instance_cache:
+            return cls._instance_cache[key]
+        
+        instance = super().__new__(cls)
+        cls._instance_cache[key] = instance
+
+        return instance
+
     def __init__(self,manga_title,window):
         self.window = window
         print()
@@ -178,6 +191,19 @@ class CollectMangaInfos(object):
         
 
 class ReadMangaScreen:
+    _instance_cache = {}
+    def __new__(cls,manga_title,window,chapter_start):
+        
+        key = (manga_title,)
+
+        if key in cls._instance_cache:
+            return cls._instance_cache[key]
+        
+        instance = super().__new__(cls)
+        cls._instance_cache[key] = instance
+
+        return instance
+
     def __init__(self,manga_title,window,chapter_start):
 
         self.manga_title = manga_title
@@ -380,6 +406,21 @@ class ReadMangaScreen:
         self.get_pages_chapters()
 
 class ChapterView:
+    
+    _instance_cache = {}
+
+    def __new__(cls,manga_title,window):
+
+        key = (manga_title,)
+
+        if key in cls._instance_cache:
+            return cls._instance_cache[key]
+        
+        instance = super().__new__(cls)
+        cls._instance_cache[key] = instance
+
+        return instance
+
     def __init__(self,manga_title,window):
 
         self.window = window
@@ -510,9 +551,12 @@ class ChapterView:
 
 
     def get_description_len(self):
+        if hasattr(self,"_desc_len"):
+           return self._desc_len
+
         text = self.description_label.cget("text") 
-        desc_len = len(text)
-        #print(desc_len)
+        self._desc_len = len(text)
+           
 
     def delete_manga(self,show_message):
         try:
@@ -646,12 +690,28 @@ class ChapterView:
         main_window_frame(self.window,"Naruto")
 
 class DisplayMangaInfos:
+    _instance_cache = {}
+    def __new__(cls,manga_title,window,main_frames,popular_manga):
+        
+        key = (manga_title,tuple(popular_manga))
+
+        if key in cls._instance_cache:
+            return cls._instance_cache[key]
+        
+        instance = super().__new__(cls)
+        cls._instance_cache[key] = instance
+
+        return instance
+
     def __init__(self,manga_title,window,main_frames,popular_manga):
+        
+
 
         self.manga_title = manga_title
         self.window = window
         self.popular_manga = popular_manga
         self.main_frames = main_frames
+        self._initialized = True
 
         # ergebnis der mangas beim suchen
         self.result = search_manga_result(manga_title)
@@ -725,7 +785,7 @@ class DisplayMangaInfos:
         except Exception as e:
             print(e)
 
-    
+
     def switch_to_random(self):
         if self.checkbox_random_var.get() == "on" :
             if self.checkbox_popular.get() == "off":
@@ -786,7 +846,7 @@ class DisplayMangaInfos:
         if os.path.exists(path):
             print("Manga exists",manga_name)
         else:
-            d = CollectMangaInfos(manga_name,self.window)
+            d = CollectMangaInfos(manga_name,self.window,)
             err = d.start_download_thread()
         
             return err

@@ -6,6 +6,7 @@ import io
 from concurrent.futures import ThreadPoolExecutor
 from settings import manga_location,chapter_download
 from nerd_debug import NerdCLI
+import functools
 
 # doku: https://api.mangadex.org/docs/04-chapter/feed/
 
@@ -16,6 +17,7 @@ manga_title = None
 nerd = NerdCLI()
 
 
+@functools.lru_cache
 def search_manga_result(manga_title) -> list:
     global nerd
     r = requests.get(f"{base_url}/manga?title={manga_title}")
@@ -35,6 +37,7 @@ def search_manga_result(manga_title) -> list:
             
     return results
 
+@functools.lru_cache
 def get_manga_status(manga_id) -> str:
     global nerd
     global base_url
@@ -56,6 +59,7 @@ def get_manga_status(manga_id) -> str:
     
     return manga_status
 
+@functools.lru_cache
 def get_random_manga() -> list:
     global base_url
     url = f"{base_url}/manga/random"
@@ -83,6 +87,7 @@ def get_random_manga() -> list:
         print("DEBUG (random_manga)",e)
     return random_manga_list
 
+@functools.lru_cache
 def get_manga_genre(manga_id) -> list:
     global base_url
     url = f"{base_url}/manga/{manga_id}"
@@ -109,6 +114,7 @@ def get_manga_genre(manga_id) -> list:
 
     return genre_list
 
+@functools.lru_cache
 def get_popular_manga() -> list:
     url = "https://api.mangadex.org/manga?limit=10&order[followedCount]=desc"
 
@@ -130,6 +136,7 @@ def get_popular_manga() -> list:
     else:
         print(r.status_code)
 
+@functools.lru_cache
 def get_manga_description(manga_id) -> str:
     global base_url
     url = f"{base_url}/manga/{manga_id}"
@@ -152,6 +159,7 @@ def get_manga_description(manga_id) -> str:
 
     return description
 
+@functools.lru_cache
 def get_manga_cover(title):
     manga_id = get_manga_title(title)
     #print(manga_id)
@@ -174,6 +182,7 @@ def get_manga_cover(title):
         print(nerd.print_status_code)
 
 
+@functools.lru_cache
 def load_cover_image(manga_id,filename,sizex,sizey):
         cover_image = f"https://uploads.mangadex.org/covers/{manga_id}/{filename}" 
         r = requests.get(cover_image)
@@ -187,6 +196,7 @@ def load_cover_image(manga_id,filename,sizex,sizey):
             print("Fehler beim laden des bildes:",r.status_code)
 
 
+@functools.lru_cache
 def get_manga_title(manga_title):
     try:
         manga_title_response = requests.get(f"{base_url}/manga?title={manga_title}")
@@ -202,6 +212,7 @@ def get_manga_title(manga_title):
         print("Does this manga exist?")
     return manga_id
 
+@functools.lru_cache
 def get_only_chapters(manga_id):
         feed_url = f"{base_url}/manga/{manga_id}/feed?translatedLanguage[]=en&order[chapter]=asc"
         feed_response = requests.get(feed_url)
@@ -220,6 +231,7 @@ def get_only_chapters(manga_id):
 
             return chapter_number
 
+@functools.lru_cache
 def get_manga_chapters(manga_id,):
         feed_url = f"{base_url}/manga/{manga_id}/feed?translatedLanguage[]=en&order[chapter]=asc"
         feed_response = requests.get(feed_url)
@@ -258,6 +270,7 @@ def get_manga_chapters(manga_id,):
             return chapter_list
 
 
+@functools.lru_cache
 def get_server_data(chapter_id):
     server_response = requests.get(f"{base_url}/at-home/server/{chapter_id}")
     if server_response.status_code == 200:
