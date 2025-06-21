@@ -14,6 +14,19 @@ Read and download mangas.
 
 </details>
 
+# Features/TODOS
+- [x] Search and Display Mangas
+- [x] Read and Download Mangas
+- [x] Delete Mangas
+- [x] Settings tab
+- [x] See Manga infos such as genre,description,status ...
+- [x] Filter Manga search with popular and random manga
+- [ ] Manga history tab 
+- [ ] improving ui
+- [ ] More settings in Settings tab
+- [ ] More filter options
+- [ ] colorscheme
+
 
 ## 🔌 API
 
