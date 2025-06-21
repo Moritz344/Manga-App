@@ -1,5 +1,7 @@
 import json
+import functools
 
+@functools.lru_cache
 def get_data_from_json() -> str:
     with open("data.json","r") as file:
             data = json.load(file)
@@ -22,8 +24,9 @@ def get_data_from_json() -> str:
             manga_location = data["settings"]["manga_location"]
             chapter_download = data["settings"]["chapter_download"]
 
+            mangas_downloaded = data["user_var"]
 
-            return button_color,button_hover_color,block_color,color_blue,color_green,history,manga_name,len_history,dark_charcoal,electric_blue,background,font_size,manga_location,chapter_download,text_color,colorscheme
+
+            return button_color,button_hover_color,block_color,color_blue,color_green,history,manga_name,len_history,dark_charcoal,electric_blue,background,font_size,manga_location,chapter_download,text_color,colorscheme,mangas_downloaded
             
-button_color,button_hover_color,block_color,color_blue,color_green,history,manga_name,len_history,dark_charcoal,electric_blue,background,font_size,manga_location,chapter_download,text_color,colorscheme = get_data_from_json()
-
+button_color,button_hover_color,block_color,color_blue,color_green,history,manga_name,len_history,dark_charcoal,electric_blue,background,font_size,manga_location,chapter_download,text_color,colorscheme,mangas_downloaded = get_data_from_json()

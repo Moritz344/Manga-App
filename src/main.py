@@ -6,18 +6,18 @@ import os
 from PIL import Image
 from display_manga import DisplayMangaInfos,ReadMangaScreen,main_window_frame
 from settings import *
+from session_name import *
 
 #TODO: cli ausgabe verbessern
-#TODO: bug bei chapterview -> combobox ui farben verändern sich
 #TODO: mark mangas as downloaded
 #TODO: mangas speichern in sql lite
 #TODO: history page
-#TODO: Markierte Mangas Manga Page
 
-
+window_title = choose_session_name()
 
 window = ctk.CTk()
 window.geometry("800x600")
+window.title(window_title)
 ctk.set_appearance_mode("dark")
 window.configure(fg_color=f"{background}")
 
