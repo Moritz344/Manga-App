@@ -8,10 +8,12 @@ from display_manga import DisplayMangaInfos,ReadMangaScreen,main_window_frame
 from settings import *
 from session_name import *
 
-#TODO: cli ausgabe verbessern
-#TODO: mark mangas as downloaded
 #TODO: mangas speichern in sql lite
-#TODO: history page
+#TODO: history tab
+#TODO: github tab
+#TODO: Readmangascreen tab verbessern
+#TODO: colorschemes hinzufügen
+
 
 window_title = choose_session_name()
 
