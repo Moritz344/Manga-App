@@ -13,9 +13,11 @@ from CTkToolTip import *
 from CTkCodeBox import *
 import threading
 import functools
-
+from get_downloaded_mangas import downloaded_mangas
 
 def main_window_frame(window,manga_title):
+
+
     def get_manga_with_name():
         window.focus()
         manga_title = search_field.get()
@@ -690,6 +692,7 @@ class ChapterView:
         main_window_frame(self.window,"Naruto")
 
 class DisplayMangaInfos:
+
     _instance_cache = {}
     def __new__(cls,manga_title,window,main_frames,popular_manga):
         
@@ -706,7 +709,8 @@ class DisplayMangaInfos:
     def __init__(self,manga_title,window,main_frames,popular_manga):
         
 
-
+        self.mangas_installed = None
+        self.mangas_to_mark = None
         self.manga_title = manga_title
         self.window = window
         self.popular_manga = popular_manga
@@ -785,6 +789,24 @@ class DisplayMangaInfos:
         except Exception as e:
             print(e)
 
+        self.installed_mangas()
+
+
+
+
+    def installed_mangas(self,):
+        self.mangas_installed = downloaded_mangas()
+        #print(mangas_installed)
+
+    def check_list_for_installed(self,list_of_mangas):
+        mark_this_manga = []
+        for manga in list_of_mangas:
+            for manga_2 in self.mangas_installed:
+                if manga == manga_2:
+                    #print(f"Manga: {manga} is installed.")
+                    mark_this_manga.append(manga)
+
+        return mark_this_manga
 
     def switch_to_random(self):
         if self.checkbox_random_var.get() == "on" :
@@ -836,7 +858,7 @@ class DisplayMangaInfos:
         
         self.update_image_cover(new_title,None)
         print(self.covers)
-        
+
         self.display_mangas(self.result,len(self.result))
 
 
@@ -917,6 +939,7 @@ class DisplayMangaInfos:
                 text_block.grid(row=row,column=col,padx=28,pady=0,sticky="se")
 
 
+
                 try:
                     block_label = ctk.CTkLabel(
                     text_block,text=f"{result[i]}",compound="left",font=(None,font_size,"bold"),text_color="white",
@@ -924,10 +947,15 @@ class DisplayMangaInfos:
                 except Exception as e:
                     print(e)
 
+                marked_box = ctk.CTkButton(text_block,
+                text="Installed",fg_color="green",hover_color="#235730",width=50,
+                font=(None,font_size,))
+
+
 
 
                 block_label.place(x=5,y=0)
-                
+
                 try:
                     block_image = ctk.CTkLabel(block,text=f"",image=self.image_cover)
                     block_image.place(x=0,y=0)
@@ -937,6 +965,11 @@ class DisplayMangaInfos:
                 # description label
                 curr_manga = block_label.cget("text")
 
+                # mark downloaded mangas as 'installed'
+                mark = self.check_list_for_installed(result)
+                if curr_manga in mark:
+                    tooltip = CTkToolTip(marked_box,message="You have installed this manga.")
+                    marked_box.place(x=210,y=50)
 
                 open_btn = ctk.CTkButton(text_block,text="Open",fg_color=f"{button_color}",font=(None,20),
                 hover_color=f"{button_hover_color}",command= lambda r=curr_manga: self.open_manga(r))
@@ -948,12 +981,10 @@ class DisplayMangaInfos:
 
 class Settings:
     def __init__(self,window):
-        # textgröße
-        # app theme / eigenes theme erstellen
-        # speicherort festlegen downloads
-        # Kapitelanzahl begrenzen
-        # History löschen
-        # Heruntergeladene Mangas löschen
+        # TODO: app theme / eigenes theme erstellen
+        # TODO: Heruntergeladene Mangas löschen
+
+        self.changed_setting = False
 
         self.window = window
         self.clear_ui_elements()
@@ -1088,6 +1119,7 @@ class Settings:
     def check_manga_path(self,path) -> str:
         # user has to give the full path if not the path is incorrect
         if os.path.exists(path):
+            self.changed_setting = True
             print("Path exists: ",path)
             CTkMessagebox(self.window,justify="center",
             message=f"New manga path for mangas is saved in: {path}",
@@ -1115,6 +1147,7 @@ class Settings:
 
 
     def save_manga_location(self):
+        self.changed_setting = True
         path = self.check_manga_path(self.manga_path_entry.get())
         write_data_to_json("settings","manga_location",path)
         print("Saved manga location:",path)
@@ -1148,10 +1181,12 @@ class Settings:
         self.reset_grid_config()
         self.clear_ui_elements()
         main_window_frame(self.window,f"{manga_name}")
-        CTkMessagebox(self.window,justify="center",
-        message="Restart the app to see the changed settings in action!",icon="info",title="Settings")
+        if self.changed_setting:
+            CTkMessagebox(self.window,justify="center",
+            message="Restart the app to see the changed settings in action!",icon="info",title="Settings")
 
     def save_theme_settings(self) -> None:
+        self.changed_setting = True
         max_entry_length: int = 6   
 
         self.window.focus()
