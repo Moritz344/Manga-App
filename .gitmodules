@@ -4,6 +4,3 @@
 [submodule "src/CTkCodeBox"]
 	path = src/CTkCodeBox
 	url = git@github.com:Akascape/CTkCodeBox.git
-[submodule "src/ctk_components"]
-	path = src/ctk_components
-	url = git@github.com:rudymohammadbali/ctk_components
