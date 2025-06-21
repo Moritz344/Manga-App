@@ -15,14 +15,14 @@ import threading
 import functools
 from get_downloaded_mangas import downloaded_mangas
 
-def main_window_frame(window,manga_title):
 
+def main_window_frame(window,manga_title):
 
     def get_manga_with_name():
         window.focus()
         manga_title = search_field.get()
-        print(manga_title)
         c.update_manga(manga_title)
+
 
     def open_settings():
         s = Settings(window)
@@ -71,13 +71,6 @@ def main_window_frame(window,manga_title):
     hover_color=f"{button_hover_color}",
     font=(None,30))
 
-    kofgio= ctk.CTkButton(
-    settings_frame,
-    text="History",
-    text_color="white",
-    fg_color="transparent",
-    hover_color=f"{button_hover_color}",
-    font=(None,30))
 
     search_field = ctk.CTkEntry(entry_frame,
     width=1300,
@@ -119,10 +112,13 @@ def main_window_frame(window,manga_title):
 
     every_frame = [search_field,search_btn,entry_frame,settings_frame,settings_btn,history_btn]
 
-    popular_manga = get_popular_manga()   
-    # TODO Popular manga anzeigen:
+    popular_manga = get_popular_manga()
+
     c = DisplayMangaInfos(None,main_frame,every_frame,popular_manga)
-    c.show_popular_manga()
+    c.update_manga(manga_title)
+     #c.show_popular_manga()
+
+    #c.show_popular_manga()
 
 
 
@@ -689,7 +685,7 @@ class ChapterView:
             print(e)
     def back_btn(self):
         self.clear_all_ui_elements()
-        main_window_frame(self.window,"Naruto")
+        main_window_frame(self.window,self.manga_title)
 
 class DisplayMangaInfos:
 
