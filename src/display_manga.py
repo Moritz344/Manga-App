@@ -23,6 +23,10 @@ def main_window_frame(window,manga_title):
         manga_title = search_field.get()
         c.update_manga(manga_title)
 
+    def change_dots_icon_enter(event):
+        points_settings.configure(image=black_dots_icon)
+    def change_dots_icon_leave(event):
+        points_settings.configure(image=dots_icon)
 
     def open_settings():
         s = Settings(window)
@@ -50,6 +54,8 @@ def main_window_frame(window,manga_title):
     github_icon = ctk.CTkImage(Image.open("assets/icons/github.png"),size=(50,50))
     search_image = ctk.CTkImage(Image.open("assets/icons/search.png"),size=(40,40))
     search_image_small = ctk.CTkImage(Image.open("assets/icons/search.png"),size=(20,20))
+    dots_icon = ctk.CTkImage(Image.open("assets/icons/dots.png"),size=(20,20))
+    black_dots_icon = ctk.CTkImage(Image.open("assets/icons/black_dots.png"),size=(20,20))
 
 
     settings_frame = ctk.CTkFrame(main_container,width=100,height=1080,fg_color="#1B1E20",corner_radius=0)
@@ -66,6 +72,9 @@ def main_window_frame(window,manga_title):
 
     small_search_btn = ctk.CTkButton(settings_frame,image=search_image,text="",width=10,height=0,corner_radius=0,font=(None,10),)
     small_search_btn.grid(row=0,column=1,padx=5,pady=0,)
+
+    points_settings = ctk.CTkButton(entry_frame,text="",width=10,hover_color="#31363B",fg_color="#31363B",image=dots_icon)
+    points_settings.pack(side="right",padx=5,pady=5,)
 
     settings_btn = ctk.CTkButton(settings_frame,text="Settings",image=settings_icon,font=(None,20),command=open_settings,
                                  compound="left",anchor="w",corner_radius=0,fg_color="#31363B")
@@ -92,15 +101,15 @@ def main_window_frame(window,manga_title):
     font=(None,20),
     corner_radius=0,
     command=lambda :get_manga_with_name(),
-    hover_color=f"{button_hover_color}",
     image=search_image)
 
-    search_field.pack(anchor="e",padx=650,pady=10)
+    search_field.pack(anchor="e",padx=600,pady=10)
     search_btn.place(x=690,y=10)
 
 
 
     #show_frame(main_frame)
+
 
 
 
@@ -114,6 +123,8 @@ def main_window_frame(window,manga_title):
     #c.show_popular_manga()
 
 
+    points_settings.bind("<Enter>",change_dots_icon_enter)
+    points_settings.bind("<Leave>",change_dots_icon_leave)
 
     return manga_title
 
@@ -427,17 +438,17 @@ class ChapterView:
 
 
         self.main_container = ctk.CTkFrame(window,fg_color="transparent")
-        self.main_container.grid(row=0,column=0,sticky="nsew")
+        self.main_container.grid(row=0,column=0,)
 
-        self.main_container.grid_columnconfigure(0,weight=3)
-        self.main_container.grid_columnconfigure(1,weight=1)
+        self.main_container.grid_columnconfigure(0,weight=1)
+        self.main_container.grid_columnconfigure(1,weight=0)
         self.main_container.grid_rowconfigure(0,weight=1)
 
 
 
 
-        self.frame_1 = ctk.CTkFrame(self.main_container,width=1000,fg_color="#242423",corner_radius=10)
-        self.frame_1.grid(row=0,column=0,padx=(20,20),pady=0,sticky="nsew")
+        self.frame_1 = ctk.CTkFrame(self.main_container,height=850,width=1000,fg_color="#242423",corner_radius=10)
+        self.frame_1.grid(row=0,column=0,padx=(20,20),pady=10,)
 
         self.cover_frame = ctk.CTkFrame(self.frame_1,width=600,height=400,fg_color="transparent")
         self.cover_frame.place(x=10,y=10,)
@@ -445,8 +456,10 @@ class ChapterView:
         self.info_frame = ctk.CTkFrame(self.frame_1,width=600,fg_color="transparent")
         self.info_frame.place(x=300,y=10)
 
+
+
         self.frame_0 = ctk.CTkFrame(self.main_container,fg_color="transparent")
-        self.frame_0.grid(row=0,column=1,padx=(10,20),pady=0,sticky="nsew")
+        self.frame_0.grid(row=0,column=1,padx=0,pady=10,sticky="n")
 
         self.manga_title: str = manga_title
         manga_id,filename = get_manga_cover(self.manga_title)
@@ -500,8 +513,8 @@ class ChapterView:
         self.description_label.pack(side="left",padx=0,pady=0)
         
         
-        self.chapter_frame = ctk.CTkScrollableFrame(self.frame_0,width=750,height=1000,fg_color="transparent")
-        self.chapter_frame.pack(side="left",padx=10,pady=30,anchor="ne")
+        self.chapter_frame = ctk.CTkScrollableFrame(self.frame_0,width=750,height=750,fg_color="transparent")
+        self.chapter_frame.pack(side="left",padx=10,pady=100,anchor="ne")
 
 
 
@@ -510,7 +523,7 @@ class ChapterView:
         self.order_chapter = ctk.CTkComboBox(self.frame_0,
         values=["Start From Last","Start From First"],state="readonly",variable=self.combobox_var,
                                              command=self.combobox_order)
-        self.order_chapter.place(x=15,y=0)
+        self.order_chapter.place(x=15,y=60)
 
         self.delete_btn = ctk.CTkButton(self.frame_1,text="Delete Manga",
         font=(None,20),fg_color="#e05033",hover_color=f"#a5250b",command=lambda: self.delete_manga(True))
