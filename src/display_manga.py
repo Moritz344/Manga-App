@@ -27,94 +27,87 @@ def main_window_frame(window,manga_title):
     def open_settings():
         s = Settings(window)
 
-    
-    window.grid_rowconfigure(0, weight=0)  # settings_frame
-    window.grid_rowconfigure(1, weight=0)  # entry_frame
-    window.grid_rowconfigure(2, weight=1)  # main_frame fills remaining space
-    window.grid_columnconfigure(0, weight=1)
+    def show_frame(frame):
+        frame.tkraise()
 
-    
+    window.grid_columnconfigure(0,weight=1)
+    window.grid_rowconfigure(0,weight=0)
+    window.grid_rowconfigure(1,weight=1)
+
+
+    main_container = ctk.CTkFrame(window,fg_color="transparent")
+    main_container.grid(row=0,column=0,sticky="nsew",rowspan=2)
+
+    main_container.grid_rowconfigure(0, weight=0)
+    main_container.grid_rowconfigure(1, weight=3)
+
+    main_container.grid_columnconfigure(0, weight=1)
+    main_container.grid_columnconfigure(1, weight=1)
+
+
     settings_icon = ctk.CTkImage(Image.open("assets/icons/settings.png"),size=(50,50))
     history_icon = ctk.CTkImage(Image.open("assets/icons/history.png"),size=(50,50))
     github_icon = ctk.CTkImage(Image.open("assets/icons/github.png"),size=(50,50))
+    search_image = ctk.CTkImage(Image.open("assets/icons/search.png"),size=(40,40))
+    search_image_small = ctk.CTkImage(Image.open("assets/icons/search.png"),size=(20,20))
 
 
-    settings_frame = ctk.CTkFrame(window,width=1800,height=50,fg_color=f"{background}")
+    settings_frame = ctk.CTkFrame(main_container,width=100,height=1080,fg_color="#1B1E20",corner_radius=0)
+    settings_frame.grid(row=1,column=0,sticky="nsew")
 
-    entry_frame = ctk.CTkFrame(window,height=500,fg_color="transparent")
+    entry_frame = ctk.CTkFrame(main_container,height=200,width=1080,fg_color="#31363B",corner_radius=0)
+    entry_frame.grid(row=0,column=0,padx=0,columnspan=2,sticky="nsew")
 
-    settings_btn = ctk.CTkButton(
-    settings_frame,
-    text="Settings",
-    image=settings_icon,
-    fg_color="transparent",
-    text_color="white",
-    command=open_settings,
-    hover_color=f"{button_hover_color}",
-    font=(None,30))
+    main_frame = ctk.CTkFrame(main_container,width=2000,height=2000,fg_color="transparent")
+    main_frame.grid(row=1,column=1,padx=0,sticky="nsew")
 
-    github_btn = ctk.CTkButton(
-    settings_frame,
-    text="Github",
-    image=github_icon,
-    text_color="white",
-    fg_color="transparent",
-    hover_color=f"{button_hover_color}",
-    font=(None,30))
+    small_search_bar = ctk.CTkEntry(settings_frame,placeholder_text="Search",height=50,corner_radius=0,width=290,font=(None,20),)
+    small_search_bar.grid(row=0,column=0,padx=5,pady=20,sticky="nsew")
 
-    history_btn = ctk.CTkButton(
-    settings_frame,
-    text="History",
-    image=history_icon,
-    text_color="white",
-    fg_color="transparent",
-    hover_color=f"{button_hover_color}",
-    font=(None,30))
+    small_search_btn = ctk.CTkButton(settings_frame,image=search_image,text="",width=10,height=0,corner_radius=0,font=(None,10),)
+    small_search_btn.grid(row=0,column=1,padx=5,pady=0,)
+
+    settings_btn = ctk.CTkButton(settings_frame,text="Settings",image=settings_icon,font=(None,20),command=open_settings,
+                                 compound="left",anchor="w",corner_radius=0,fg_color="#31363B")
+    settings_btn.grid(row=1,column=0,padx=10,pady=20,sticky="nsew")
+
+    history_btn = ctk.CTkButton(settings_frame,text="History",image=history_icon,font=(None,20),
+                                anchor="w",corner_radius=0,fg_color="#31363B")
+    history_btn.grid(row=2,column=0,padx=10,pady=20,sticky="nsew")
 
 
     search_field = ctk.CTkEntry(entry_frame,
-    width=1300,
-    height=70,
-    font=(None,30),
-    placeholder_text="Search Manga ...",
+    width=500,
+    height=50,
+    font=(None,20),
+                            placeholder_text="Search Manga ...",
     placeholder_text_color="#B3B3B3",
-    corner_radius=10)
-    search_field.grid(row=0,column=1,padx=10,pady=0,sticky="ew")
-    
-    search_image = ctk.CTkImage(Image.open("assets/icons/search.png"),size=(50,50))
+    corner_radius=0)
+
 
     search_btn = ctk.CTkButton(entry_frame,
     text="",
-    width=10,
-    height=70,
-    font=(None,30),
-    fg_color=f"{button_color}",
+    width=20,
+    height=50,
+    font=(None,20),
+    corner_radius=0,
     command=lambda :get_manga_with_name(),
     hover_color=f"{button_hover_color}",
     image=search_image)
-    search_btn.grid(row=0,column=0,padx=0,pady=0,)
+
+    search_field.pack(anchor="e",padx=650,pady=10)
+    search_btn.place(x=690,y=10)
 
 
 
-    main_frame = ctk.CTkFrame(window,width=2000,height=2000,fg_color="transparent")
+    #show_frame(main_frame)
 
-    settings_frame.grid(row=0,column=0,pady=10,)
-    entry_frame.grid(row=1,column=0,pady=10,)
-    main_frame.grid(row=2,column=0,padx=10,pady=0,sticky="nsew")
 
-    settings_btn.pack(side="left",padx=10,pady=5)
-    history_btn.pack(side="left",padx=10,pady=5)
-    github_btn.pack(side="right",padx=10,pady=5)
-
-    tooltip_1 = CTkToolTip(settings_btn,message="View the settings tab")
-    tooltip_2 = CTkToolTip(history_btn,message="View your history ")
-    tooltip_3 = CTkToolTip(github_btn,message="My Github")
-
-    every_frame = [search_field,search_btn,entry_frame,settings_frame,settings_btn,history_btn]
 
     popular_manga = get_popular_manga()
 
-    c = DisplayMangaInfos(None,main_frame,every_frame,popular_manga)
+
+    c = DisplayMangaInfos(None,main_frame,main_container,popular_manga)
     c.update_manga(manga_title)
      #c.show_popular_manga()
 
@@ -207,6 +200,13 @@ class ReadMangaScreen:
         self.manga_title = manga_title
         self.window = window
 
+        self.main_container = ctk.CTkFrame(window)
+        self.main_container.grid(row=0,column=0,sticky="nsew")
+
+        window.grid_rowconfigure(0,weight=1)
+        window.grid_columnconfigure(0,weight=1)
+
+
         self.manga_path = f"{manga_location}/{manga_title}"
         self.chapter_start = chapter_start
 
@@ -226,20 +226,16 @@ class ReadMangaScreen:
         self.current_page_number: int = 0
         self.pages_list = []
 
-        self.window.grid_rowconfigure(0, weight=1)
-        self.window.grid_rowconfigure(1, weight=0)
-        self.window.grid_columnconfigure(0, weight=0)
-        self.window.grid_columnconfigure(1, weight=1)
-        self.window.grid_columnconfigure(2, weight=0)
+        self.main_container.grid_columnconfigure(3,weight=1)
+        self.main_container.grid_rowconfigure(0,weight=1)
+        self.main_container.grid_rowconfigure(1,weight=4)
+
+        self.option_field_2 = ctk.CTkFrame(self.main_container,fg_color="gray")
+        self.option_field_2.grid(row=1, column=3, sticky="nsew", padx=10, pady=10)
 
 
-
-        self.option_field_2 = ctk.CTkFrame(self.window,width=800,height=300,)
-        self.option_field_2.grid(row=1, column=1, sticky="ew", padx=10, pady=10)
-
-
-        self.option_field = ctk.CTkFrame(self.window,width=300,height=800,)
-        self.option_field.grid(row=0, column=0, sticky="ns", padx=10, pady=10)
+        self.option_field = ctk.CTkFrame(self.main_container,fg_color="gray")
+        self.option_field.grid(row=0, column=1, sticky="ns", padx=10, pady=10)
 
         #self.manga_title_label = ctk.CTkLabel(self.option_field,text=f"{self.manga_title}",font=(None,30))
         #self.manga_title_label.pack(padx=0,pady=0)
@@ -250,21 +246,20 @@ class ReadMangaScreen:
         self.chapter_label = ctk.CTkLabel(self.option_field,text=f"Chapter: {self.chapter_number}",font=(None,30))
         self.chapter_label.pack()
 
-        self.manga_field = ctk.CTkFrame(self.window,width=1000,height=800)
-        self.manga_field.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        self.manga_field = ctk.CTkFrame(self.main_container,fg_color="gray")
+        self.manga_field.grid(row=0, column=3, sticky="nsew", padx=10, pady=10)
 
-        self.window.grid_rowconfigure(0, weight=1)
-        self.window.grid_columnconfigure(1, weight=1)
 
 
 
         self.next_page_btn = ctk.CTkButton(self.option_field_2,text="",image=self.arrow_image_right,
         command=self.next_page,fg_color=f"{button_color}",hover_color=f"{button_hover_color}")
-        self.next_page_btn.pack(side="right",anchor="s",padx=0,pady=0)
+        self.next_page_btn.pack(side="right",padx=0,pady=0)
+        #self.next_page_btn.place(x=0,y=0)
 
         self.prev_page_btn = ctk.CTkButton(self.option_field_2,text="",command=self.prev_page,
         fg_color=f"{button_color}",hover_color=f"{button_hover_color}",image=self.arrow_image_left)
-        self.prev_page_btn.pack(side="left",anchor="s",padx=0,pady=0)
+        self.prev_page_btn.pack(side="left",padx=0,pady=0)
 
         self.next_chapter_btn = ctk.CTkButton(self.option_field_2,text="Next Chapter",
         command=self.next_chapter,fg_color=f"{button_color}",hover_color=f"{button_hover_color}",font=(None,20))
@@ -429,11 +424,20 @@ class ChapterView:
         self.description = None
         self.genres: list = None
         self.manga_status: str = None
-        
 
 
-        self.frame_1 = ctk.CTkFrame(window,width=800,height=1000,fg_color="#242423",corner_radius=10)
-        self.frame_1.pack(side="left",expand=True,padx=0,pady=100,)
+        self.main_container = ctk.CTkFrame(window,fg_color="transparent")
+        self.main_container.grid(row=0,column=0,sticky="nsew")
+
+        self.main_container.grid_columnconfigure(0,weight=3)
+        self.main_container.grid_columnconfigure(1,weight=1)
+        self.main_container.grid_rowconfigure(0,weight=1)
+
+
+
+
+        self.frame_1 = ctk.CTkFrame(self.main_container,width=1000,fg_color="#242423",corner_radius=10)
+        self.frame_1.grid(row=0,column=0,padx=(20,20),pady=0,sticky="nsew")
 
         self.cover_frame = ctk.CTkFrame(self.frame_1,width=600,height=400,fg_color="transparent")
         self.cover_frame.place(x=10,y=10,)
@@ -441,10 +445,8 @@ class ChapterView:
         self.info_frame = ctk.CTkFrame(self.frame_1,width=600,fg_color="transparent")
         self.info_frame.place(x=300,y=10)
 
-
-
-        self.frame_0 = ctk.CTkFrame(window,width=400,height=1000,fg_color="transparent")
-        self.frame_0.pack(side="right",expand=True,padx=0,pady=100,)
+        self.frame_0 = ctk.CTkFrame(self.main_container,fg_color="transparent")
+        self.frame_0.grid(row=0,column=1,padx=(10,20),pady=0,sticky="nsew")
 
         self.manga_title: str = manga_title
         manga_id,filename = get_manga_cover(self.manga_title)
@@ -671,16 +673,9 @@ class ChapterView:
 
     def clear_all_ui_elements(self):
         try:
-            for w in self.window.winfo_children():
+            for w in self.main_container.winfo_children():
                 w.destroy()
 
-            #self.back_button.destroy()
-            #self.chapter_label.destroy()
-            #self.chapter_frame.destroy()
-            #self.frame_0.destroy()
-            #self.frame_1.destroy()
-            #self.chapter_header.destroy()
-            #self.combobox_order.destroy()
         except Exception as e:
             print(e)
     def back_btn(self):
@@ -702,7 +697,7 @@ class DisplayMangaInfos:
 
         return instance
 
-    def __init__(self,manga_title,window,main_frames,popular_manga):
+    def __init__(self,manga_title,window,main_container,popular_manga):
         
 
         self.mangas_installed = None
@@ -710,7 +705,7 @@ class DisplayMangaInfos:
         self.manga_title = manga_title
         self.window = window
         self.popular_manga = popular_manga
-        self.main_frames = main_frames
+        self.main_container = main_container
         self._initialized = True
 
         # ergebnis der mangas beim suchen
@@ -870,18 +865,8 @@ class DisplayMangaInfos:
             return err
 
     def clear_all_ui_elements(self):
-        #self.scrollable_frame.grid_forget()
-            
-            for widget_0 in self.window.winfo_children():
-                widget_0.destroy()
-
-            for widget in self.main_frames:
-                widget.destroy()
-            
-
-            #self.search_field.destroy()
-            #self.search_btn.destroy()
-            #self.entry_frame.destroy()
+        for widget in self.main_container.winfo_children():
+            widget.destroy()
 
     def message_box_func(self,error):
         if error:
@@ -909,7 +894,7 @@ class DisplayMangaInfos:
 
 
             self.clear_all_ui_elements()
-            ChapterView(r,self.window)
+            ChapterView(r,self.main_container)
         else:
             self.message_box_func(True)
 
