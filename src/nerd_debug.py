@@ -30,7 +30,3 @@ class NerdCLI:
         self.log.info(f"[green] CHAPTER_NUMBER: {chapter_number} [/]")
         self.log.info(f"[green] HOST:           {host} [/]")
         self.log.info(f"[green] CHAPTER_HASH:   {chapter_hash} [/]")
-
-
-
-

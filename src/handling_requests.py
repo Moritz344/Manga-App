@@ -4,7 +4,7 @@ import shutil
 from PIL import Image,ImageTk
 import io
 from concurrent.futures import ThreadPoolExecutor
-from settings import manga_location,chapter_download
+from json_utils.settings import manga_location,chapter_download
 from nerd_debug import NerdCLI
 import functools
 

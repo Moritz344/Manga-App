@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
 
-from settings import mangas_downloaded
+from json_utils.settings import mangas_downloaded
 
 def downloaded_mangas() -> list:
     installed_mangas = []

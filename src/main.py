@@ -5,9 +5,10 @@ import requests
 import os
 from PIL import Image
 from display_manga import DisplayMangaInfos,ReadMangaScreen,main_window_frame
-from settings import *
+from json_utils.settings import background
 from session_name import *
 
+#TODO: wenn der manga name zu lange ist dann buchstaben durch ... ersetzen
 #TODO: mangas speichern in sql lite
 #TODO: history tab
 #TODO: github tab

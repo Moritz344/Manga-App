@@ -1,4 +1,4 @@
-from settings import manga_name
+from json_utils.settings import manga_name
 import random
 
 settings_dic = {
