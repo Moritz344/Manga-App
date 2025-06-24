@@ -2,19 +2,18 @@ import customtkinter as ctk
 from handling_requests import *
 from PIL import Image
 import tkinter.font as tkFont
-from settings import *
-from write_to_json import write_data_to_json
+from json_utils.settings import *
+from json_utils.write_to_json import write_data_to_json
 from CTkMessagebox import CTkMessagebox
 import tkinter as tk
 from tkinter import filedialog
 import random
 import shutil
 from CTkToolTip import *
-from CTkCodeBox import *
 import threading
 import functools
 from get_downloaded_mangas import downloaded_mangas
-
+from json_utils.delete_json_data import delete_data_in_json
 
 def main_window_frame(window,manga_title):
 
@@ -67,21 +66,21 @@ def main_window_frame(window,manga_title):
     main_frame = ctk.CTkFrame(main_container,width=2000,height=2000,fg_color="transparent")
     main_frame.grid(row=1,column=1,padx=0,sticky="nsew")
 
-    small_search_bar = ctk.CTkEntry(settings_frame,placeholder_text="Search",height=50,corner_radius=0,width=290,font=(None,20),)
+    small_search_bar = ctk.CTkEntry(settings_frame,placeholder_text="Search",height=50,width=290,font=(None,20),)
     small_search_bar.grid(row=0,column=0,padx=5,pady=20,sticky="nsew")
 
-    small_search_btn = ctk.CTkButton(settings_frame,image=search_image,text="",width=10,height=0,corner_radius=0,font=(None,10),)
+    small_search_btn = ctk.CTkButton(settings_frame,image=search_image,text="",width=10,height=0,font=(None,10),)
     small_search_btn.grid(row=0,column=1,padx=5,pady=0,)
 
     points_settings = ctk.CTkButton(entry_frame,text="",width=10,hover_color="#31363B",fg_color="#31363B",image=dots_icon)
     points_settings.pack(side="right",padx=5,pady=5,)
 
     settings_btn = ctk.CTkButton(settings_frame,text="Settings",image=settings_icon,font=(None,20),command=open_settings,
-                                 compound="left",anchor="w",corner_radius=0,fg_color="#31363B")
+                                 compound="left",anchor="w",fg_color="#31363B")
     settings_btn.grid(row=1,column=0,padx=10,pady=20,sticky="nsew")
 
     history_btn = ctk.CTkButton(settings_frame,text="History",image=history_icon,font=(None,20),
-                                anchor="w",corner_radius=0,fg_color="#31363B")
+                                anchor="w",fg_color="#31363B")
     history_btn.grid(row=2,column=0,padx=10,pady=20,sticky="nsew")
 
 
@@ -91,7 +90,7 @@ def main_window_frame(window,manga_title):
     font=(None,20),
                             placeholder_text="Search Manga ...",
     placeholder_text_color="#B3B3B3",
-    corner_radius=0)
+    )
 
 
     search_btn = ctk.CTkButton(entry_frame,
@@ -99,7 +98,6 @@ def main_window_frame(window,manga_title):
     width=20,
     height=50,
     font=(None,20),
-    corner_radius=0,
     command=lambda :get_manga_with_name(),
     image=search_image)
 
@@ -534,6 +532,7 @@ class ChapterView:
                                              hover_color=f"{button_hover_color}",command=self.back_btn)
         self.back_button.place(x=10,y=770)
 
+
         
         self.manga_status_handler()
         
@@ -569,11 +568,13 @@ class ChapterView:
 
         text = self.description_label.cget("text") 
         self._desc_len = len(text)
-           
+
+
 
     def delete_manga(self,show_message):
         try:
             if os.path.exists(self.path):
+                delete_data_in_json(self.manga_title)
                 shutil.rmtree(self.path)
                 #print(f"Successfully Removed: {self.path}")
                 if show_message:
@@ -584,7 +585,7 @@ class ChapterView:
                     icon="cancel",justify="center")
                 self.back_btn()
         except Exception as e:
-            print(e)
+            print("in delete manga ",e)
     
     def combobox_order(self,v):
         if v == "Start From Last":
@@ -659,7 +660,7 @@ class ChapterView:
                 corner_radius=10,
                 anchor="ne",
                 font=(None,30,"bold"),fg_color=f"#242423",
-                hover_color="#454150",
+                hover_color="#474444",
                 command= lambda m=self.curr_block: self.read_manga(m))
 
                 block.pack(padx=0,pady=5,anchor="w")
@@ -675,7 +676,7 @@ class ChapterView:
                 height=100,
                 corner_radius=10,
                 anchor="ne",
-                font=(None,30,"bold"),fg_color=f"#242423",hover_color=f"#454150",
+                font=(None,30,"bold"),fg_color=f"#242423",hover_color=f"#474444",
                 command= lambda m=self.curr_block: self.read_manga(m))
 
                 block.pack(padx=0,pady=5,anchor="w")
@@ -720,11 +721,12 @@ class DisplayMangaInfos:
         self.popular_manga = popular_manga
         self.main_container = main_container
         self._initialized = True
+        self.manga_name_len = 20
 
         # ergebnis der mangas beim suchen
         self.result = search_manga_result(manga_title)
 
-        
+        self.download_icon = ctk.CTkImage(Image.open("assets/icons/download.png"),size=(30,30))
 
         self.grid_container = ctk.CTkFrame(self.window,width=1500,fg_color="transparent")
         self.grid_container.pack(padx=10,pady=10)
@@ -911,12 +913,12 @@ class DisplayMangaInfos:
         else:
             self.message_box_func(True)
 
+
     def display_mangas(self,result,length,):
         
 
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
-
 
 
         for i in range(length):
@@ -942,7 +944,7 @@ class DisplayMangaInfos:
                     print(e)
 
                 marked_box = ctk.CTkButton(text_block,
-                text="Installed",fg_color="green",hover_color="#235730",width=50,
+                text="",image=self.download_icon,fg_color="green",hover_color="#235730",width=50,
                 font=(None,font_size,))
 
 
@@ -958,15 +960,22 @@ class DisplayMangaInfos:
                     self.covers = []
                 # description label
                 curr_manga = block_label.cget("text")
+                full_manga_name = block_label.cget("text")
 
                 # mark downloaded mangas as 'installed'
                 mark = self.check_list_for_installed(result)
                 if curr_manga in mark:
                     tooltip = CTkToolTip(marked_box,message="You have installed this manga.")
-                    marked_box.place(x=210,y=50)
+                    marked_box.place(x=250,y=50)
+
+                # manga with long names get shortended
+                if len(curr_manga) >= 30:
+                    curr_manga = curr_manga[:30] + "..."
+
+                block_label.configure(text=f"{curr_manga}")
 
                 open_btn = ctk.CTkButton(text_block,text="Open",fg_color=f"{button_color}",font=(None,20),
-                hover_color=f"{button_hover_color}",command= lambda r=curr_manga: self.open_manga(r))
+                hover_color=f"{button_hover_color}",command= lambda r=full_manga_name: self.open_manga(r))
                 open_btn.place(x=5,y=50)
 
 
