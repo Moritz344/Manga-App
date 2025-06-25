@@ -14,8 +14,27 @@ import threading
 import functools
 from get_downloaded_mangas import downloaded_mangas
 from json_utils.delete_json_data import delete_data_in_json
+from utils.ctkloader import CTkLoader
+
+def start_main_screen_in_thread(window,manga_title):
+
+    def check_thread():
+        if t.is_alive():
+            window.after(200,check_thread)
+        else:
+            loader.stop_loader()
+
+
+
+    t = threading.Thread(target=lambda: main_window_frame(window,manga_title),daemon=True)
+    t.start()
+
+    loader = CTkLoader(master=window,)
+    window.after(200,check_thread())
+
 
 def main_window_frame(window,manga_title):
+
 
     def get_manga_with_name():
         window.focus()
@@ -123,6 +142,7 @@ def main_window_frame(window,manga_title):
 
     points_settings.bind("<Enter>",change_dots_icon_enter)
     points_settings.bind("<Leave>",change_dots_icon_leave)
+
 
     return manga_title
 
@@ -399,7 +419,7 @@ class ReadMangaScreen:
     def search_screen(self):
         self.clear_ui_elements()
         self.reset_grid_config()
-        main_window_frame(self.window,self.manga_title)
+        start_main_screen_in_thread(self.window,self.manga_title)
 
     def get_manga_information(self):
         manga_id = get_manga_title(self.manga_title)
@@ -534,8 +554,7 @@ class ChapterView:
 
 
         
-        self.manga_status_handler()
-        
+
         self.manga_status_text_label = ctk.CTkLabel(self.info_frame,text="Manga Status",font=(None,20)
         ,text_color=f"{button_hover_color}")
         self.manga_status_text_label.pack(anchor="w",padx=0,pady=0)
@@ -551,11 +570,28 @@ class ChapterView:
         except Exception as e:
             print(e)
 
+
+
+    def start_chapter_view(self):
+        self.manga_status_handler()
         self.get_description_len()
         self.get_chapters()
         self.combobox_order(self.combobox_var.get())
 
-    
+    def start_chapter_view_in_thread(self):
+
+        def check_thread():
+            if t.is_alive():
+                self.main_container.after(200,check_thread)
+            else:
+                loader.stop_loader()
+
+        t = threading.Thread(target=self.start_chapter_view,daemon=True)
+        t.start()
+
+        loader = CTkLoader(master=self.main_container,)
+        self.main_container.after(200,check_thread)
+
     def manga_status_handler(self):
         manga_id = get_manga_title(manga_title)
         manga_status = get_manga_status(manga_id)
@@ -694,7 +730,7 @@ class ChapterView:
             print(e)
     def back_btn(self):
         self.clear_all_ui_elements()
-        main_window_frame(self.window,self.manga_title)
+        start_main_screen_in_thread(self.window,self.manga_title)
 
 class DisplayMangaInfos:
 
@@ -909,7 +945,13 @@ class DisplayMangaInfos:
 
 
             self.clear_all_ui_elements()
-            ChapterView(r,self.main_container)
+
+
+            c = ChapterView(r,self.main_container)
+
+
+            c.start_chapter_view_in_thread()
+
         else:
             self.message_box_func(True)
 
@@ -1183,7 +1225,7 @@ class Settings:
     def home_screen(self) -> None:
         self.reset_grid_config()
         self.clear_ui_elements()
-        main_window_frame(self.window,f"{manga_name}")
+        start_main_screen_in_thread(self.window,manga_name)
         if self.changed_setting:
             CTkMessagebox(self.window,justify="center",
             message="Restart the app to see the changed settings in action!",icon="info",title="Settings")
