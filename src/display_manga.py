@@ -12,7 +12,7 @@ import shutil
 from CTkToolTip import *
 import threading
 import functools
-from get_downloaded_mangas import downloaded_mangas
+from get_downloaded_mangas import downloaded_mangas,get_pages_from_downloaded_mangas
 from json_utils.delete_json_data import delete_data_in_json
 from utils.ctkloader import CTkLoader
 
@@ -255,6 +255,12 @@ class ReadMangaScreen:
         self.current_page_number: int = 0
         self.pages_list = []
 
+        pages_len = get_pages_from_downloaded_mangas(self.manga_title,self.current_chapter_number)
+        self.pages_len = pages_len
+
+
+        self.chapter_list = os.listdir(self.manga_path)
+
         self.main_container.grid_columnconfigure(3,weight=1)
         self.main_container.grid_rowconfigure(0,weight=1)
         self.main_container.grid_rowconfigure(1,weight=4)
@@ -278,6 +284,17 @@ class ReadMangaScreen:
         self.manga_field = ctk.CTkFrame(self.main_container,fg_color="gray")
         self.manga_field.grid(row=0, column=3, sticky="nsew", padx=10, pady=10)
 
+
+        chapter_var = tk.StringVar(value=f"Chapter_1")
+        self.chapter_combobox = ctk.CTkComboBox(self.option_field,font=(None,15),width=150,height=50,
+        values=self.chapter_list,variable=chapter_var)
+        self.chapter_combobox.pack(anchor="w",padx=0,pady=10)
+
+        page_var = tk.StringVar(value=f"Page_0")
+        self.page_combobox = ctk.CTkComboBox(self.option_field,font=(None,15),width=150,height=50,
+        values=self.pages_list,variable=page_var)
+        self.page_combobox.pack(anchor="w",padx=0,pady=10)
+        self.update_combobox(self.current_chapter_number)
 
 
 
@@ -329,11 +346,23 @@ class ReadMangaScreen:
         for i in range(2):
             self.window.grid_rowconfigure(i,weight=0)
 
+    def update_combobox(self,curr_chapter):
+        pages_list = []
+        new_pages = get_pages_from_downloaded_mangas(self.manga_title,curr_chapter)
+
+        for page in range(new_pages):
+            pages_list.append(str(f"Page_{page}"))
+
+        self.page_combobox.configure(values=pages_list)
+
+        del pages_list
+
     def next_chapter(self):
         #print(self.current_chapter_number,self.chapter_number)
             if self.current_chapter_number <= self.chapter_number - 1:
                 self.current_page_number = 0
                 self.current_chapter_number += 1
+                self.update_combobox(self.current_chapter_number)
                 self.update_image(self.current_page_number,self.current_chapter_number)
                 self.manga_image_label.configure(image=self.manga_page_image)
                 self.update_pages_counter(self.current_chapter_number )
@@ -343,6 +372,7 @@ class ReadMangaScreen:
             if self.current_chapter_number > 0:
                 self.current_page_number = 0
                 self.current_chapter_number -= 1
+                self.update_combobox(self.current_chapter_number)
                 self.update_image(self.current_page_number,self.current_chapter_number)
                 self.manga_image_label.configure(image=self.manga_page_image)
                 self.update_pages_counter(self.current_chapter_number )
@@ -487,8 +517,14 @@ class ChapterView:
         self.cover_label = ctk.CTkLabel(self.cover_frame,text="",anchor="s",image=image_cover)
         self.cover_label.pack(side="left",padx=0,pady=0,anchor="ne")
 
+
+        if len(self.manga_title) >= 36:
+            short_manga_title = self.manga_title[:36] + "..."
+        else:
+            short_manga_title = self.manga_title
+
         self.get_all_chapters()
-        self.title_label = ctk.CTkLabel(self.info_frame,text=f"{self.manga_title}",font=(None,30))
+        self.title_label = ctk.CTkLabel(self.info_frame,text=f"{short_manga_title}",font=(None,30))
         self.title_label.pack(anchor="w",padx=0,pady=0,)
         
 
@@ -586,10 +622,13 @@ class ChapterView:
             else:
                 loader.stop_loader()
 
+
+        loader = CTkLoader(master=self.main_container,)
+        loader.update()
+
         t = threading.Thread(target=self.start_chapter_view,daemon=True)
         t.start()
 
-        loader = CTkLoader(master=self.main_container,)
         self.main_container.after(200,check_thread)
 
     def manga_status_handler(self):
@@ -919,24 +958,8 @@ class DisplayMangaInfos:
         for widget in self.main_container.winfo_children():
             widget.destroy()
 
-    def message_box_func(self,error):
-        if error:
-            CTkMessagebox(
-                self.window,
 
-                title="Error",
-                message=f"Failed  downloading ",
-                icon="cancel",
-                justify="center"
-            )
-        else:
-            CTkMessagebox(self.window,
-            title="Downloading ...",
-            message=f"Dowloading Manga now. This might take a while",
-            icon="info",
-            justify="center")
-
-    def open_manga(self,r):
+    def open_manga(self,r,curr):
         print("Downloading Manga now: ",manga_name)
         err = self.check_manga_exist(r)
         if not err:
@@ -946,14 +969,10 @@ class DisplayMangaInfos:
 
             self.clear_all_ui_elements()
 
-
+            #ReadMangaScreen(r,self.main_container,1)
             c = ChapterView(r,self.main_container)
-
-
             c.start_chapter_view_in_thread()
 
-        else:
-            self.message_box_func(True)
 
 
     def display_mangas(self,result,length,):
@@ -1003,12 +1022,12 @@ class DisplayMangaInfos:
                 # description label
                 curr_manga = block_label.cget("text")
                 full_manga_name = block_label.cget("text")
-
                 # mark downloaded mangas as 'installed'
                 mark = self.check_list_for_installed(result)
                 if curr_manga in mark:
                     tooltip = CTkToolTip(marked_box,message="You have installed this manga.")
                     marked_box.place(x=250,y=50)
+
 
                 # manga with long names get shortended
                 if len(curr_manga) >= 30:
@@ -1017,7 +1036,7 @@ class DisplayMangaInfos:
                 block_label.configure(text=f"{curr_manga}")
 
                 open_btn = ctk.CTkButton(text_block,text="Open",fg_color=f"{button_color}",font=(None,20),
-                hover_color=f"{button_hover_color}",command= lambda r=full_manga_name: self.open_manga(r))
+                hover_color=f"{button_hover_color}",command= lambda r=full_manga_name: self.open_manga(r,curr_manga))
                 open_btn.place(x=5,y=50)
 
 
