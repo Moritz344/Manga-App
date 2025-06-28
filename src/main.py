@@ -4,14 +4,14 @@ from handling_requests import *
 import requests
 import os
 from PIL import Image
-from display_manga import DisplayMangaInfos,ReadMangaScreen,main_window_frame
+from display_manga import DisplayMangaInfos,ReadMangaScreen,start_main_screen_in_thread
 from json_utils.settings import background
 from session_name import *
+from utils.ctkloader import CTkLoader
+import threading
 
-#TODO: wenn der manga name zu lange ist dann buchstaben durch ... ersetzen
 #TODO: mangas speichern in sql lite
 #TODO: history tab
-#TODO: github tab
 #TODO: Readmangascreen tab verbessern
 #TODO: colorschemes hinzufügen
 
@@ -24,10 +24,11 @@ window.title(window_title)
 ctk.set_appearance_mode("dark")
 window.configure(fg_color=f"{background}")
 
+start_main_screen_in_thread(window,manga_title)
 
-main_window_frame(window,manga_title)
 
-
+loader = CTkLoader(master=window,opacity=10,)
+window.after(5000,loader.stop_loader)
 
 window.mainloop()
 
