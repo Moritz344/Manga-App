@@ -13,6 +13,9 @@ Read and download mangas.
 
 </details>
 
+# IMPORTANT
+This app might not be usable right now.
+
 # Features/TODOS
 - [x] Search and Display Mangas
 - [x] Read and Download Mangas
