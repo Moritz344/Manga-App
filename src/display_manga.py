@@ -15,6 +15,7 @@ import functools
 from get_downloaded_mangas import downloaded_mangas,get_pages_from_downloaded_mangas
 from json_utils.delete_json_data import delete_data_in_json
 from utils.ctkloader import CTkLoader
+import re
 
 def start_main_screen_in_thread(window,manga_title):
 
@@ -259,17 +260,20 @@ class ReadMangaScreen:
         self.pages_len = pages_len
 
 
-        self.chapter_list = os.listdir(self.manga_path)
+        chapters = self.order_chapter_list()
+        print(chapters)
+        self.chapter_array = chapters
+        print(self.chapter_array)
 
         self.main_container.grid_columnconfigure(3,weight=1)
         self.main_container.grid_rowconfigure(0,weight=1)
         self.main_container.grid_rowconfigure(1,weight=4)
 
-        self.option_field_2 = ctk.CTkFrame(self.main_container,fg_color="gray")
+        self.option_field_2 = ctk.CTkFrame(self.main_container,fg_color="#202225")
         self.option_field_2.grid(row=1, column=3, sticky="nsew", padx=10, pady=10)
 
 
-        self.option_field = ctk.CTkFrame(self.main_container,fg_color="gray")
+        self.option_field = ctk.CTkFrame(self.main_container,fg_color="#202225")
         self.option_field.grid(row=0, column=1, sticky="ns", padx=10, pady=10)
 
         #self.manga_title_label = ctk.CTkLabel(self.option_field,text=f"{self.manga_title}",font=(None,30))
@@ -281,38 +285,38 @@ class ReadMangaScreen:
         self.chapter_label = ctk.CTkLabel(self.option_field,text=f"Chapter: {self.chapter_number}",font=(None,30))
         self.chapter_label.pack()
 
-        self.manga_field = ctk.CTkFrame(self.main_container,fg_color="gray")
+        self.manga_field = ctk.CTkFrame(self.main_container,fg_color="#202225")
         self.manga_field.grid(row=0, column=3, sticky="nsew", padx=10, pady=10)
 
 
         chapter_var = tk.StringVar(value=f"Chapter_1")
         self.chapter_combobox = ctk.CTkComboBox(self.option_field,font=(None,15),width=150,height=50,
-        values=self.chapter_list,variable=chapter_var)
-        self.chapter_combobox.pack(anchor="w",padx=0,pady=10)
+                                                values=self.chapter_array,variable=chapter_var,command=self.change_manga_chapter)
+        self.chapter_combobox.pack(anchor="w",padx=70,pady=10)
 
         page_var = tk.StringVar(value=f"Page_0")
         self.page_combobox = ctk.CTkComboBox(self.option_field,font=(None,15),width=150,height=50,
-        values=self.pages_list,variable=page_var)
-        self.page_combobox.pack(anchor="w",padx=0,pady=10)
+                                             values=self.pages_list,variable=page_var,command=self.change_manga_page)
+        self.page_combobox.pack(anchor="w",padx=70,pady=10)
         self.update_combobox(self.current_chapter_number)
 
 
 
         self.next_page_btn = ctk.CTkButton(self.option_field_2,text="",image=self.arrow_image_right,
         command=self.next_page,fg_color=f"{button_color}",hover_color=f"{button_hover_color}")
-        self.next_page_btn.pack(side="right",padx=0,pady=0)
+        self.next_page_btn.pack(side="right",padx=10,pady=0)
         #self.next_page_btn.place(x=0,y=0)
 
         self.prev_page_btn = ctk.CTkButton(self.option_field_2,text="",command=self.prev_page,
         fg_color=f"{button_color}",hover_color=f"{button_hover_color}",image=self.arrow_image_left)
-        self.prev_page_btn.pack(side="left",padx=0,pady=0)
+        self.prev_page_btn.pack(side="left",padx=10,pady=0)
 
         self.next_chapter_btn = ctk.CTkButton(self.option_field_2,text="Next Chapter",
         command=self.next_chapter,fg_color=f"{button_color}",hover_color=f"{button_hover_color}",font=(None,20))
-        self.next_chapter_btn.pack()
+        self.next_chapter_btn.pack(padx=0,pady=10)
         self.prev_chapter_btn = ctk.CTkButton(self.option_field_2,text="Prev Chapter",
         command=self.prev_chapter,fg_color=f"{button_color}",hover_color=f"{button_hover_color}",font=(None,20))
-        self.prev_chapter_btn.pack()
+        self.prev_chapter_btn.pack(padx=0,pady=10)
 
 
         self.current_page = ctk.CTkLabel(self.option_field_2,text=f"Page:{self.current_page_number}",
@@ -340,6 +344,43 @@ class ReadMangaScreen:
 
         self.get_manga_information()
 
+        self.manga_image_label.bind("<Button-1>",self.click_event_manga_field)
+
+    def order_chapter_list(self) -> list:
+        chapter_list = os.listdir(self.manga_path)
+        chapter_number = re.findall(r'\d', f"{chapter_list}")
+        chapters = [s for s in chapter_number]
+        chapters.sort()
+
+
+        return chapters
+
+
+    def click_event_manga_field(self,event):
+            print("x",event.x)
+            if event.x >= 350:
+                self.next_page()
+            else:
+                self.prev_page()
+
+    def change_manga_page(self,choice):
+        self.current_page_number = int(choice)
+        self.update_combobox(self.current_chapter_number)
+        self.update_image(self.current_page_number,self.current_chapter_number)
+        self.manga_image_label.configure(image=self.manga_page_image)
+        self.update_pages_counter(self.current_chapter_number )
+        write_data_to_json("user_var",f"{self.manga_title}",self.current_chapter_number)
+
+
+    def change_manga_chapter(self,choice):
+        self.current_page_number = 0
+        chapter = re.findall(r'\d', f"{choice}")
+
+
+        for c in chapter:
+            c = int(c)
+            self.current_chapter_number = c
+
     def reset_grid_config(self):
         for i in range(3):
             self.window.grid_columnconfigure(i,weight=0)
@@ -351,7 +392,7 @@ class ReadMangaScreen:
         new_pages = get_pages_from_downloaded_mangas(self.manga_title,curr_chapter)
 
         for page in range(new_pages):
-            pages_list.append(str(f"Page_{page}"))
+            pages_list.append(str(f"{page}"))
 
         self.page_combobox.configure(values=pages_list)
 
@@ -404,7 +445,7 @@ class ReadMangaScreen:
             #print(page_list)
         #print(f"get_pages_chapters: {self.manga_path}/Chapter_{self.current_chapter_number}/Page_{self.current_page_number}")
 
-        self.chapter_label.configure(text=f"Chapter (Downloaded): {self.chapter_number}")
+        self.chapter_label.configure(text=f"Chapter: {self.chapter_number}")
 
     def next_page(self):
         if self.current_page_number <= self.pages_len - 1:
@@ -1045,8 +1086,6 @@ class DisplayMangaInfos:
 
 class Settings:
     def __init__(self,window):
-        # TODO: app theme / eigenes theme erstellen
-        # TODO: Heruntergeladene Mangas löschen
 
         self.changed_setting = False
 
