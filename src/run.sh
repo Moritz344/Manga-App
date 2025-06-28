@@ -9,7 +9,8 @@ else
   echo "Downloading reuqirements:"
   pip install -r requirements.txt
   
-  
+
+  # TODO: function to clear data.json values to avoid errors
   # run app 
   python3 main.py
 fi
