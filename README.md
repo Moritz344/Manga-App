@@ -11,7 +11,6 @@ Read and download mangas.
 
 ![app_2](https://github.com/user-attachments/assets/48542ea6-59f3-4f27-a74c-2b57bddff1de)
 
-![app_3](https://github.com/user-attachments/assets/582368ff-3579-4854-8ca0-240b54c3a2d3)
 
 
 
