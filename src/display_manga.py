@@ -3,7 +3,7 @@ from handling_requests import *
 from PIL import Image
 import tkinter.font as tkFont
 from json_utils.settings import *
-from json_utils.write_to_json import write_data_to_json
+from json_utils.write_to_json import write_data_to_json,read_data_from_json
 from CTkMessagebox import CTkMessagebox
 import tkinter as tk
 from tkinter import filedialog
@@ -16,6 +16,7 @@ from get_downloaded_mangas import downloaded_mangas,get_pages_from_downloaded_ma
 from json_utils.delete_json_data import delete_data_in_json
 from utils.ctkloader import CTkLoader
 import re
+
 
 def start_main_screen_in_thread(window,manga_title):
 
@@ -52,6 +53,8 @@ def main_window_frame(window,manga_title):
 
     def show_frame(frame):
         frame.tkraise()
+    def open_history_tab():
+        h = History(window)
 
     window.grid_columnconfigure(0,weight=1)
     window.grid_rowconfigure(0,weight=0)
@@ -100,7 +103,7 @@ def main_window_frame(window,manga_title):
     settings_btn.grid(row=1,column=0,padx=10,pady=20,sticky="nsew")
 
     history_btn = ctk.CTkButton(settings_frame,text="History",image=history_icon,font=(None,20),
-                                anchor="w",fg_color="#31363B")
+                                anchor="w",fg_color="#31363B",command=open_history_tab)
     history_btn.grid(row=2,column=0,padx=10,pady=20,sticky="nsew")
 
 
@@ -173,18 +176,18 @@ class CollectMangaInfos(object):
         self.manga_id = manga_id
         self.manga_title = manga_title
         
+
+    
+
+    def start_download_thread(self):
+        # startet download_manga in einem thread -> app freezed nicht
+        threading.Thread(target=self.download_manga,daemon=True).start()
         CTkMessagebox(
         self.window,
         title="Downloading",
         font=(None,15),
         icon="assets/icons/coffee.png",
         message = f"Grab a coffee while we download your manga using these settings: {chapter_download}")
- 
-    
-
-    def start_download_thread(self):
-        # startet download_manga in einem thread -> app freezed nicht
-        threading.Thread(target=self.download_manga,daemon=True).start()
 
     def download_manga(self):
         error = ""
@@ -250,6 +253,8 @@ class ReadMangaScreen:
 
         self.arrow_image_right = ctk.CTkImage(Image.open("assets/arrow_right.png"),size=(30,30))
         self.arrow_image_left = ctk.CTkImage(Image.open("assets/arrow_left.png"),size=(30,30))
+        self.back_icon = ctk.CTkImage(Image.open("assets/Home.png"),size=(30,30))
+        self.chapter_icon = ctk.CTkImage(Image.open("assets/icons/file.png"),size=(30,30))
 
         self.page_number: int = 0
         self.pages_len = 50
@@ -279,10 +284,10 @@ class ReadMangaScreen:
         #self.manga_title_label = ctk.CTkLabel(self.option_field,text=f"{self.manga_title}",font=(None,30))
         #self.manga_title_label.pack(padx=0,pady=0)
 
-        self.back_button = ctk.CTkButton(self.option_field,text="Back",font=(None,30),
+        self.back_button = ctk.CTkButton(self.option_field,text="",image=self.back_icon,font=(None,30),
         command= lambda: self.search_screen(),fg_color=f"{button_color}",hover_color=f"{button_hover_color}")
         self.back_button.pack(side="bottom",anchor="s",padx=0,pady=10)
-        self.chapter_label = ctk.CTkLabel(self.option_field,text=f"Chapter: {self.chapter_number}",font=(None,30))
+        self.chapter_label = ctk.CTkLabel(self.option_field,text=f"{self.chapter_number}",font=(None,30))
         self.chapter_label.pack()
 
         self.manga_field = ctk.CTkFrame(self.main_container,fg_color="#202225")
@@ -534,6 +539,10 @@ class ChapterView:
         self.main_container.grid_rowconfigure(0,weight=1)
 
 
+        self.delete_icon = ctk.CTkImage(Image.open("assets/icons/delete.png"),size=(30,30))
+        self.back_icon = ctk.CTkImage(Image.open("assets/Home.png"),size=(30,30))
+        self.bookmark_icon = ctk.CTkImage(Image.open("assets/icons/bookmark.png"),size=(30,30))
+        self.bookmark_fill_icon = ctk.CTkImage(Image.open("assets/icons/bookmark_fill.png"),size=(30,30))
 
 
         self.frame_1 = ctk.CTkFrame(self.main_container,height=850,width=1000,fg_color="#242423",corner_radius=10)
@@ -620,15 +629,21 @@ class ChapterView:
                                              command=self.combobox_order)
         self.order_chapter.place(x=15,y=60)
 
-        self.delete_btn = ctk.CTkButton(self.frame_1,text="Delete Manga",
-        font=(None,20),fg_color="#e05033",hover_color=f"#a5250b",command=lambda: self.delete_manga(True))
-        self.delete_btn.place(x=200,y=770)
+        self.delete_btn = ctk.CTkButton(self.frame_1,text="",
+        font=(None,20),fg_color="#e05033",image=self.delete_icon,hover_color=f"#a5250b",command=lambda: self.delete_manga(True))
+        self.delete_btn.place(x=200,y=800)
 
-       
-        self.back_button = ctk.CTkButton(self.frame_1,text="Back",font=(None,20),fg_color=f"{button_color}",
+
+        self.back_button = ctk.CTkButton(self.frame_1,text="",image=self.back_icon,font=(None,20),fg_color=f"{button_color}",
                                              hover_color=f"{button_hover_color}",command=self.back_btn)
-        self.back_button.place(x=10,y=770)
+        self.back_button.place(x=10,y=800)
 
+        self.bookmark_btn = ctk.CTkButton(self.frame_1,text="",image=self.bookmark_icon,font=(None,20),fg_color="#242424",hover_color="#242424",)
+        self.bookmark_btn.place(x=390,y=800)
+
+
+        CTkToolTip(self.back_button,message="Go back to the home menu")
+        CTkToolTip(self.delete_btn,message="Delete this manga")
 
         
 
@@ -646,7 +661,6 @@ class ChapterView:
             lambda e: self.chapter_frame._parent_canvas.yview("scroll", 1, "units"))
         except Exception as e:
             print(e)
-
 
 
     def start_chapter_view(self):
@@ -725,7 +739,7 @@ class ChapterView:
             self.chapter_list = os.listdir(self.path)
         except FileNotFoundError :
             c = CollectMangaInfos(self.manga_title,self.window)
-            error = c.download_manga()
+            error = c.start_download_thread()
         
     def get_all_chapters(self):
         try:
@@ -1408,3 +1422,83 @@ class Settings:
         self.update_entry_box()
 
 
+
+
+class History:
+    def __init__(self,window):
+        self.window = window
+        self.clear_ui_elements()
+
+        self.manga_history = None
+        self.image_cover = None
+
+        self.main_container = ctk.CTkFrame(self.window,fg_color="transparent")
+        self.main_container.grid(row=0,column=0)
+
+
+        self.back_btn = ctk.CTkButton(self.main_container,text="Back",font=(None,20),command=self.home_screen)
+        self.back_btn.grid(row=0,column=0,pady=10,padx=0)
+
+        self.manga_scrollable_frame = ctk.CTkScrollableFrame(self.main_container,width=1000,height=900)
+        self.manga_scrollable_frame.grid(sticky="nsew",row=1,column=0,)
+
+        self.get_manga_history()
+        self.create_block()
+
+        try:
+            self.manga_scrollable_frame.bind_all("<Button-4>",
+            lambda e: self.manga_scrollable_frame._parent_canvas.yview("scroll", -1, "units"))
+            self.manga_scrollable_frame.bind_all("<Button-5>",
+            lambda e: self.manga_scrollable_frame._parent_canvas.yview("scroll", 1, "units"))
+        except Exception as e:
+            print(e)
+
+    def get_manga_history(self):
+        self.manga_history = os.listdir(f"{manga_location}")
+    def update_image_cover(self,manga,sizex,sizey,manga_list=None,):
+
+        manga_id, fileName = get_manga_cover(manga)
+        self.image_cover = load_cover_image(manga_id, fileName, sizex, sizey)
+
+    def create_block(self):
+        self.update_image_cover(self.manga_history[0],600,350)
+
+        for i in range(len(self.manga_history)):
+
+                row = i // 1
+                col = i % 1
+
+                block = ctk.CTkFrame(self.manga_scrollable_frame,
+                width=350,height=350,fg_color="transparent",corner_radius=0)
+                block.grid(row=row,column=col ,padx=75,pady=60)
+
+                text_block = ctk.CTkFrame(self.manga_scrollable_frame,width=600,height=350,
+                fg_color="#242424",corner_radius=0)
+                text_block.grid(row=row,column=1,padx=0,pady=0,)
+
+                text_label = ctk.CTkLabel(text_block,text=f"{self.manga_history[i]}",font=(None,20))
+                text_label.place(x=20,y=20)
+
+                open_btn = ctk.CTkButton(text_block,text="Open",font=(None,20))
+                open_btn.place(x=20,y=300)
+
+                curr_manga = text_label.cget("text")
+
+
+                # manga with long names get shortended
+                if len(curr_manga) >= 40:
+                    curr_manga = curr_manga[:40] + "..."
+
+                text_label.configure(text=curr_manga)
+
+                block_image = ctk.CTkLabel(block,text="",image=self.image_cover)
+                block_image.place(x=0,y=0)
+
+
+
+    def home_screen(self):
+        start_main_screen_in_thread(self.window,manga_name)
+
+    def clear_ui_elements(self) -> None:
+        for widget in self.window.winfo_children():
+            widget.destroy()
