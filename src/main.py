@@ -10,6 +10,7 @@ from session_name import *
 from utils.ctkloader import CTkLoader
 import threading
 
+#TODO: manga covers parrallel im thread laden
 #TODO: mangas speichern in sql lite
 #TODO: history tab
 #TODO: Readmangascreen tab verbessern
