@@ -6,9 +6,13 @@ Read and download mangas.
 <details>
 <summary>Screenshots</summary>
 
-![app_3](https://github.com/user-attachments/assets/4d9d0452-942a-408a-823c-dbaa47aa99bb)
+      
+![app](https://github.com/user-attachments/assets/f4fd09de-dfdd-4836-8860-855884427b48)
 
-![app_4](https://github.com/user-attachments/assets/d10148ab-b91f-4801-9105-3b7114ab07c8)
+![app_2](https://github.com/user-attachments/assets/48542ea6-59f3-4f27-a74c-2b57bddff1de)
+
+![app_3](https://github.com/user-attachments/assets/582368ff-3579-4854-8ca0-240b54c3a2d3)
+
 
 
 </details>
