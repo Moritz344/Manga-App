@@ -16,3 +16,14 @@ def write_data_to_json(main,key,new_value):
 
     except Exception as e:
         print(e)
+
+def read_data_from_json(main,key):
+
+    try:
+        with open("json_utils/data.json","r") as file:
+            content = json.load(file)
+
+        return content[main][key]
+    except Exception as e:
+        print("Error in read_data_from_json",e)
+
