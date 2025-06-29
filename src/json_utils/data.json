@@ -2,11 +2,6 @@
     "manga_data": {
         "manga_title": "The World's Greatest Martial Artist"
     },
-    "manga_image": {
-        "fileName": "0364b7e0-f9e6-4256-a7d3-118b0c739620.jpg",
-        "pages": [],
-        "cover_url": ""
-    },
     "settings": {
         "button_color": "#44414B",
         "button_hover_color": "#5C5963",
@@ -23,7 +18,8 @@
         "font_size": 20,
         "manga_location": "/home/moritz/dev/programming/Nero-Manga/src/Mangadex",
         "chapter_download": "Download 10",
-        "colorscheme": "Catppuccin"
+        "colorscheme": "Default",
+        "bookmarked": "Yes"
     },
     "Dracula": {
         "background_dracula": "",
@@ -37,7 +33,6 @@
     },
     "user_var": {
         "Naruto (Official Colored)": 0,
-        "My Dress-Up Darling": 4,
         "Pokemon X THE iDOLM@STER (Doujinshi)": 0,
         "Sousou no Frieren": 0,
         "Albastella in the Blue Sky": 0,
@@ -49,9 +44,10 @@
         "Kage no Jitsuryokusha ni Narit...": 0,
         "Isekai ni Kita Boku wa Kiyoubi...": 0,
         "Drawing: Saikyou Mangaka wa Oekaki Skill de Isekai Musou Suru!": 0,
-        "Solo Leveling": 0,
         "The World's Greatest Martial Artist": 1,
         "Drawing: Saikyou Mangaka wa Oe...": 0,
-        "Isekai ni Kita Boku wa Kiyoubinbode Subayasa Tayorina Tabi wo Suru": 0
+        "Isekai ni Kita Boku wa Kiyoubinbode Subayasa Tayorina Tabi wo Suru": 0,
+        "My Dress-Up Darling": 4,
+        "Kawaii Koi wa Kikazaranai": 2
     }
 }
