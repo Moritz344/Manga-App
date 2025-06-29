@@ -1,4 +1,6 @@
 # 📚 Nero-Manga
+![Last Commit](https://img.shields.io/github/last-commit/Moritz344/Nero-Manga.svg)
+
 Read and download mangas.
 
 
