@@ -6,3 +6,4 @@ CTkMessagebox
 tklinenums
 Pygments
 rich
+CTkListbox
