@@ -16,6 +16,8 @@ from get_downloaded_mangas import downloaded_mangas,get_pages_from_downloaded_ma
 from json_utils.delete_json_data import delete_data_in_json
 from utils.ctkloader import CTkLoader
 import re
+from collect_handle_download import CollectMangaInfos
+from CTkListbox import *
 
 
 def start_main_screen_in_thread(window,manga_title):
@@ -75,7 +77,7 @@ def main_window_frame(window,manga_title):
     history_icon = ctk.CTkImage(Image.open("assets/icons/history.png"),size=(50,50))
     github_icon = ctk.CTkImage(Image.open("assets/icons/github.png"),size=(50,50))
     search_image = ctk.CTkImage(Image.open("assets/icons/search.png"),size=(40,40))
-    search_image_small = ctk.CTkImage(Image.open("assets/icons/search.png"),size=(20,20))
+    search_image_small = ctk.CTkImage(Image.open("assets/icons/search.png"),size=(30,30))
     dots_icon = ctk.CTkImage(Image.open("assets/icons/dots.png"),size=(20,20))
     black_dots_icon = ctk.CTkImage(Image.open("assets/icons/black_dots.png"),size=(20,20))
 
@@ -83,7 +85,7 @@ def main_window_frame(window,manga_title):
     settings_frame = ctk.CTkFrame(main_container,width=100,height=1080,fg_color="#1B1E20",corner_radius=0)
     settings_frame.grid(row=1,column=0,sticky="nsew")
 
-    entry_frame = ctk.CTkFrame(main_container,height=200,width=1080,fg_color="#31363B",corner_radius=0)
+    entry_frame = ctk.CTkFrame(main_container,height=400,width=1080,fg_color="#31363B",corner_radius=0)
     entry_frame.grid(row=0,column=0,padx=0,columnspan=2,sticky="nsew")
 
     main_frame = ctk.CTkFrame(main_container,width=2000,height=2000,fg_color="transparent")
@@ -92,7 +94,7 @@ def main_window_frame(window,manga_title):
     small_search_bar = ctk.CTkEntry(settings_frame,placeholder_text="Search",height=50,width=290,font=(None,20),)
     small_search_bar.grid(row=0,column=0,padx=5,pady=20,sticky="nsew")
 
-    small_search_btn = ctk.CTkButton(settings_frame,image=search_image,text="",width=10,height=0,font=(None,10),)
+    small_search_btn = ctk.CTkButton(settings_frame,image=search_image,text="",width=10,height=0,font=(None,20))
     small_search_btn.grid(row=0,column=1,padx=5,pady=0,)
 
     points_settings = ctk.CTkButton(entry_frame,text="",width=10,hover_color="#31363B",fg_color="#31363B",image=dots_icon)
@@ -136,9 +138,11 @@ def main_window_frame(window,manga_title):
 
     popular_manga = get_popular_manga()
 
+    included_tag_names = ["Romance"]
+    excluded_tag_names = ["Harem"]
 
-    c = DisplayMangaInfos(None,main_frame,main_container,popular_manga)
-    c.update_manga(manga_title)
+    c = DisplayMangaInfos(None,main_frame,main_container,popular_manga,included_tag_names,excluded_tag_names)
+    c.update_manga(manga_title,)
      #c.show_popular_manga()
 
     #c.show_popular_manga()
@@ -150,69 +154,7 @@ def main_window_frame(window,manga_title):
 
     return manga_title
 
-class CollectMangaInfos(object):
-    _instance_cache = {}
-    def __new__(cls,manga_title,window,):
-        
-        key = (manga_title,)
 
-        if key in cls._instance_cache:
-            return cls._instance_cache[key]
-        
-        instance = super().__new__(cls)
-        cls._instance_cache[key] = instance
-
-        return instance
-
-    def __init__(self,manga_title,window):
-        self.window = window
-        print()
-        manga_id = get_manga_title(manga_title)
-        print()
-        
-        self.chapters= get_manga_chapters(manga_id)
-        #print(self.chapters)
-
-        self.manga_id = manga_id
-        self.manga_title = manga_title
-        
-
-    
-
-    def start_download_thread(self):
-        # startet download_manga in einem thread -> app freezed nicht
-        threading.Thread(target=self.download_manga,daemon=True).start()
-        CTkMessagebox(
-        self.window,
-        title="Downloading",
-        font=(None,15),
-        icon="assets/icons/coffee.png",
-        message = f"Grab a coffee while we download your manga using these settings: {chapter_download}")
-
-    def download_manga(self):
-        error = ""
-        try:
-                for i,(chapter_id,chapter_number) in enumerate(self.chapters):
-                    result = get_server_data(chapter_id)
-                    if result is None:
-                        return
-                    pages,host,chapter_hash = result
-                    
-                    
-
-                    downloading_chapters(pages,chapter_number,self.manga_title,host,chapter_hash)
-
-
-                #print("id,num: ",chapter_id,chapter_number)
-            #print("pages,host,hash",pages,host,chapter_hash)
-                    
-                
-                                   
-                
-        except Exception as e:
-            error = e
-            return error
-        
 
 class ReadMangaScreen:
     _instance_cache = {}
@@ -543,6 +485,7 @@ class ChapterView:
         self.back_icon = ctk.CTkImage(Image.open("assets/Home.png"),size=(30,30))
         self.bookmark_icon = ctk.CTkImage(Image.open("assets/icons/bookmark.png"),size=(30,30))
         self.bookmark_fill_icon = ctk.CTkImage(Image.open("assets/icons/bookmark_fill.png"),size=(30,30))
+        self.update_icon = ctk.CTkImage(Image.open("assets/icons/download.png"),size=(30,30))
 
 
         self.frame_1 = ctk.CTkFrame(self.main_container,height=850,width=1000,fg_color="#242423",corner_radius=10)
@@ -641,9 +584,13 @@ class ChapterView:
         self.bookmark_btn = ctk.CTkButton(self.frame_1,text="",image=self.bookmark_icon,font=(None,20),fg_color="#242424",hover_color="#242424",)
         self.bookmark_btn.place(x=390,y=800)
 
+        self.update_btn = ctk.CTkButton(self.frame_1,text="",image=self.update_icon,font=(None,20),fg_color=f"{color_green}",hover_color="#235730",command=self.update_chapter_list_btn)
+        self.update_btn.place(x=580,y=800)
+
 
         CTkToolTip(self.back_button,message="Go back to the home menu")
         CTkToolTip(self.delete_btn,message="Delete this manga")
+        CTkToolTip(self.update_btn,message="Update manga list")
 
         
 
@@ -662,6 +609,8 @@ class ChapterView:
         except Exception as e:
             print(e)
 
+    def update_chapter_list_btn(self):
+        self.start_chapter_view_in_thread()
 
     def start_chapter_view(self):
         self.manga_status_handler()
@@ -756,10 +705,9 @@ class ChapterView:
             self.genres = genre_list
             self.genres = ",".join(self.genres)
         except Exception as e:
-            CTkMessagebox(self.window,title="Error",
+            CTkMessagebox(self.main_container,title="Error",
             message=f"No Chapter for {self.manga_title} found",
             icon="cancel")
-            print("get_all_chapters:",e)
 
     
     def read_manga(self,m) -> None:
@@ -829,7 +777,7 @@ class ChapterView:
 class DisplayMangaInfos:
 
     _instance_cache = {}
-    def __new__(cls,manga_title,window,main_frames,popular_manga):
+    def __new__(cls,manga_title,window,main_frames,popular_manga,included_tag_names,excluded_tag_names):
         
         key = (manga_title,tuple(popular_manga))
 
@@ -841,7 +789,7 @@ class DisplayMangaInfos:
 
         return instance
 
-    def __init__(self,manga_title,window,main_container,popular_manga):
+    def __init__(self,manga_title,window,main_container,popular_manga,included_tag_names,excluded_tag_names):
         
 
         self.mangas_installed = None
@@ -853,10 +801,21 @@ class DisplayMangaInfos:
         self._initialized = True
         self.manga_name_len = 20
 
+        self.included_tag_names = included_tag_names
+        self.excluded_tag_names = excluded_tag_names
+        self.included_tag_names_uuid = None
+
+
+        uuids = transform_tags(self.included_tag_names)
+        self.included_tag_names_uuid = uuids
+
         # ergebnis der mangas beim suchen
-        self.result = search_manga_result(manga_title)
+        self.result = search_manga_result(manga_title,tuple(self.included_tag_names_uuid))
+
+        print("HIER",self.result)
 
         self.download_icon = ctk.CTkImage(Image.open("assets/icons/download.png"),size=(30,30))
+        self.filter_icon = ctk.CTkImage(Image.open("assets/icons/filter.png"),size=(30,30))
 
         self.grid_container = ctk.CTkFrame(self.window,width=1500,fg_color="transparent")
         self.grid_container.pack(padx=10,pady=10)
@@ -885,6 +844,13 @@ class DisplayMangaInfos:
         hover_color=f"{button_hover_color}")
 
         self.checkbox_popular.grid(sticky="w",row=0,column=0,pady=10,padx=240)
+
+
+        self.filter_option = ctk.CTkButton(self.grid_container,compound="left",image=self.filter_icon,text="Filter",
+        width=40,font=(None,20),command=self.show_filter_options)
+        self.filter_option.grid(sticky="w",row=0,column=0,pady=10,padx=390)
+
+
 
         self.scrollable_frame = ctk.CTkScrollableFrame(master=self.grid_container, 
         width=1500,height=800,fg_color=f"{dark_charcoal}",
@@ -915,6 +881,7 @@ class DisplayMangaInfos:
 
 
 
+        CTkToolTip(self.filter_option,message="Filter mangas")
 
         # Für Linux 
         try:
@@ -928,7 +895,69 @@ class DisplayMangaInfos:
         self.installed_mangas()
 
 
+    def show_filter_options(self):
+        def handle_tags(choice):
+            self.included_tag_names = choice
+            uuids = transform_tags(self.included_tag_names)
+            self.included_tag_names_uuid = uuids
 
+        def reset_filter_options():
+
+            for option in range(genres.size()):
+                genres.deactivate(option)
+
+            status.deactivate(status.curselection())
+
+            window.destroy()
+
+
+        window = ctk.CTkToplevel()
+        window.title("Filter Options")
+        window.resizable(width=True,height=True)
+        filter_frame = ctk.CTkScrollableFrame(window,width=500,height=600)
+        filter_frame.pack(padx=0,pady=150)
+
+        ctk.CTkLabel(filter_frame,text="Filter Tags",font=(None,20)).pack(anchor="w",padx=10,pady=10)
+        genres = CTkListbox(filter_frame,height=200,multiple_selection=True,command=handle_tags)
+        genres.pack(anchor="w",padx=10,pady=10)
+        genres.insert(0,"Action")
+        genres.insert(1,"Adventure")
+        genres.insert(2,"Boys' Love")
+        genres.insert(3,"Comedy")
+        genres.insert(4,"Crime")
+        genres.insert(5,"Drama")
+        genres.insert(6,"Fantasy")
+        genres.insert(7,"Girls' Love")
+        genres.insert(8,"Historical")
+        genres.insert(9,"Horror")
+        genres.insert(10,"Isekai")
+        genres.insert(11,"Magical Girls")
+        genres.insert(12,"Mecha")
+        genres.insert(13,"Medical")
+        genres.insert(14,"Mystery")
+        genres.insert(15,"Philosophical")
+        genres.insert(16,"Psychological")
+        genres.insert(17,"Romance")
+
+        ctk.CTkLabel(filter_frame,text="Filter Status",font=(None,20)).pack(anchor="w",padx=10,pady=10)
+        status = CTkListbox(filter_frame,height=150)
+        status.pack(anchor="w",padx=10,pady=10)
+        status.insert(0,"Ongoing")
+        status.insert(1,"Completed")
+        status.insert(2,"Hiatus")
+        status.insert(3,"Cancelled")
+
+
+        #CTkListbox(filter_frame,height=150).pack(anchor="w",padx=10,pady=10)
+        #CTkListbox(filter_frame,height=150).pack(anchor="w",padx=10,pady=10)
+        #
+        window.protocol("WM_DELETE_WINDOW",reset_filter_options)
+
+    def filter_genres(self,choice):
+        self.included_tag_names.append(choice)
+        uuids = transform_tags(self.included_tag_names)
+        self.included_tag_names_uuid = uuids
+        print(choice)
 
     def installed_mangas(self,):
         self.mangas_installed = downloaded_mangas()
@@ -986,9 +1015,9 @@ class DisplayMangaInfos:
         #        image_cover = load_cover_image(manga_id,fileName,350,400)
         #        self.covers.append(image_cover)
     
-    def update_manga(self, new_title):
+    def update_manga(self, new_title,):
         self.manga_title = new_title
-        self.result = search_manga_result(new_title)
+        self.result = search_manga_result(new_title,tuple(self.included_tag_names_uuid))
         self.manga_num = len(self.result)
         
         
@@ -999,12 +1028,12 @@ class DisplayMangaInfos:
 
 
 
-    def check_manga_exist(self,manga_name):
-        path = f"{manga_location}/{manga_name}"
+    def check_manga_exist(self,title):
+        path = f"{manga_location}/{title}"
         if os.path.exists(path):
-            print("Manga exists",manga_name)
+            print("Manga exists",title)
         else:
-            d = CollectMangaInfos(manga_name,self.window,)
+            d = CollectMangaInfos(title,self.window,)
             err = d.start_download_thread()
         
             return err
@@ -1027,6 +1056,8 @@ class DisplayMangaInfos:
             #ReadMangaScreen(r,self.main_container,1)
             c = ChapterView(r,self.main_container)
             c.start_chapter_view_in_thread()
+        else:
+            print(err)
 
 
 
